@@ -3,6 +3,7 @@
 set -eu
 
 source ~/common.zsh
+source ~/grub.zsh
 source ~/layerinfo.zsh
 
 CACHE=/cache
@@ -31,9 +32,7 @@ mkdir -p ${BUILD}/live ${CACHE}/live
 mkdir -p ${BUILD}/boot/grub
 mkdir -p ${ISOLINUX}
 
-cp /root/grub.cfg ${BUILD}/boot/grub/
-
-cp ${BUILD}/boot/grub/grub.cfg ${BUILD}/EFI/BOOT/grub.cfg
+cp /root/grub.cfg ${BUILD}/boot/grub/grub.cfg
 
 for layer in $(layerinfo_get_unique_layers); do
     Line "Building layer ${layer}" > /dev/stderr
@@ -67,13 +66,7 @@ for target in $(layerinfo_get_targets); do
         }
     done
 
-    cat <<EOF >> ${BUILD}/EFI/BOOT/grub.cfg
-menuentry "Debian Live [${target}]" {
-    search --no-floppy --set=root --label DEBLIVE
-    linux (\$root)/${DEST}/vmlinuz boot=live toram module=${target}
-    initrd (\$root)/${DEST}/initrd
-}
-EOF
+    grub_deblive_menu_entry $target "toram" >> ${BUILD}/EFI/BOOT/grub.cfg
 done
 
 Info "Building grub config"
