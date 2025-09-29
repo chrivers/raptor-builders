@@ -1,0 +1,6 @@
+FROM docker://debian:trixie
+
+RUN apt-get update
+RUN apt-get install -y isolinux syslinux-common xorriso grub-common squashfs-tools dosfstools mtools zsh grub-efi-amd64-bin jq
+
+RUN mkdir -p /input /output/iso /output/build
