@@ -46,9 +46,9 @@ for target in $(layerinfo_get_targets); do
     Info "Target [${target}]"
     local DEST="boot/${target}"
     mkdir -p ${BUILD}/${DEST}
+
     truncate -s0 "${BUILD}/live/${target}.module"
 
-    echo -n > "${BUILD}/${DEST}/${target}.module"
     for layer in $(layerinfo_get_layers_for_target $target); do
         echo "${layer}.squashfs" >> "${BUILD}/live/${target}.module"
 

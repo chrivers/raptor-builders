@@ -12,8 +12,6 @@ function Log() {
 
 function Line() {
     Log "${fg_bold[white]}" "|" $*
-    # Log "" " " $*
-    # echo " ${fg_bold[green]}${reset_color}  $*" > /dev/stderr
 }
 
 function Debug() {
