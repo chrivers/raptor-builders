@@ -77,9 +77,6 @@ grub-mkstandalone -O x86_64-efi \
     --themes="" \
     --fonts="" \
     --output="${BUILD}/EFI/BOOT/BOOTX64.EFI"
-#     "boot/grub/grub.cfg=${OUTPUT}/tmp/grub-embed.cfg"
-
-cd $BUILD
 
 Info "Building efiboot image"
 
@@ -89,11 +86,13 @@ truncate -s 20M ${EFIBOOT_IMG}
 mkfs.vfat ${EFIBOOT_IMG}
 mmd -i ${EFIBOOT_IMG} ::/EFI ::/EFI/BOOT
 mcopy -vi ${EFIBOOT_IMG} \
-      "EFI/BOOT/BOOTX64.EFI" \
-      "boot/grub/grub.cfg" \
+      "${BUILD}/EFI/BOOT/BOOTX64.EFI" \
+      "${BUILD}/boot/grub/grub.cfg" \
       ::/EFI/BOOT/
 
 Info "Building iso"
+
+cd $BUILD
 
 maybe_break buildiso
 
