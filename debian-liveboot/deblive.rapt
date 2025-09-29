@@ -1,0 +1,12 @@
+FROM liveboot-base
+
+COPY deblive/common.zsh /root/common.zsh
+COPY deblive/grub.cfg /root/grub.cfg
+COPY deblive/generate.sh /root/generate.sh
+
+MOUNT --simple cache  /cache
+MOUNT --layers input  /input
+MOUNT --file   output /output/iso/debian-custom.iso
+
+ENTRYPOINT /bin/zsh
+CMD /root/generate.sh
