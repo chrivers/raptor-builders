@@ -32,7 +32,7 @@ mkdir -p ${BUILD}/live ${CACHE}/live
 mkdir -p ${BUILD}/boot/grub
 mkdir -p ${ISOLINUX}
 
-cp /root/grub.cfg ${BUILD}/boot/grub/grub.cfg
+grub_deblive_menu_base > ${BUILD}/boot/grub/grub.cfg
 
 for layer in $(layerinfo_get_unique_layers); do
     Line "Building layer ${layer}" > /dev/stderr
