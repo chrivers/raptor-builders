@@ -7,7 +7,7 @@ COPY deblive/generate.sh /root/generate.sh
 
 MOUNT --simple cache  /cache
 MOUNT --layers input  /input
-MOUNT --file   output /output/iso/debian-custom.iso
+MOUNT --file   output /output/debian-liveboot.iso
 
 ENTRYPOINT /bin/zsh
 CMD /root/generate.sh

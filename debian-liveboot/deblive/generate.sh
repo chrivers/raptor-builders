@@ -8,7 +8,7 @@ source ~/layerinfo.zsh
 
 CACHE=/cache
 LAYERS=/input
-OUTPUT=/output/iso
+OUTPUT=/output/debian-liveboot.iso
 BUILD=/output/build
 EFIBOOT_IMG=${BUILD}/efiboot.img
 
@@ -94,7 +94,7 @@ maybe_break buildiso
 
 cp -r /usr/lib/grub/i386-pc ${BUILD}/boot/grub/i386-pc/
 
-truncate -s0 $OUTPUT/debian-custom.iso
+truncate -s0 ${OUTPUT}
 
 xorriso \
     -as mkisofs \
@@ -115,9 +115,9 @@ xorriso \
     -no-emul-boot \
     -isohybrid-gpt-basdat \
     -isohybrid-apm-hfsplus \
-    -o ${OUTPUT}/debian-custom.iso \
+    -o ${OUTPUT} \
     -graft-points \
-    "${BUILD}" \
+    ${BUILD} \
     /boot/grub/bios.img=${BUILD}/bios.img
 
 Info "Complete"
