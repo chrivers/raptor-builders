@@ -92,8 +92,6 @@ cd $BUILD
 
 maybe_break buildiso
 
-cp -r /usr/lib/grub/i386-pc ${BUILD}/boot/grub/i386-pc/
-
 truncate -s0 ${OUTPUT}
 
 xorriso \
