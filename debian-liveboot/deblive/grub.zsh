@@ -31,7 +31,26 @@ EOF
 grub-mkstandalone-bios() {
     local TARGET=$1
 
-    local DEFAULT_MODULES=(linux normal iso9660 fat ext2 cat configfile biosdisk search memdisk tar ls part_gpt part_msdos all_video font minicmd ${GRUB_EXTRA_MODULES:-})
+    local DEFAULT_MODULES=(
+        linux
+        normal
+        iso9660
+        fat
+        ext2
+        cat
+        configfile
+        biosdisk
+        search
+        memdisk
+        tar
+        ls
+        part_gpt
+        part_msdos
+        all_video
+        font
+        minicmd
+        ${GRUB_EXTRA_MODULES:-}
+    )
 
     grub-mkstandalone \
         --format=i386-pc \
@@ -51,7 +70,14 @@ grub-mkstandalone-bios() {
 grub-mkstandalone-efi() {
     local TARGET=$1
 
-    local DEFAULT_MODULES=(part_gpt part_msdos fat iso9660 ext2 ${GRUB_EXTRA_MODULES:-})
+    local DEFAULT_MODULES=(
+        part_gpt
+        part_msdos
+        fat
+        iso9660
+        ext2
+        ${GRUB_EXTRA_MODULES:-}
+    )
 
     grub-mkstandalone \
         -O x86_64-efi \
