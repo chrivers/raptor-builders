@@ -27,3 +27,37 @@ menuentry "Debian Live [${TARGET}]" {
 }
 EOF
 }
+
+grub-mkstandalone-bios() {
+    local TARGET=$1
+
+    local DEFAULT_MODULES=(linux normal iso9660 fat ext2 cat configfile biosdisk search memdisk tar ls part_gpt part_msdos all_video font minicmd ${GRUB_EXTRA_MODULES:-})
+
+    grub-mkstandalone \
+        --format=i386-pc \
+        --install-modules="${GRUB_MODULES:-$DEFAULT_MODULES}" \
+        --modules="${GRUB_MODULES:-$DEFAULT_MODULES}" \
+        --locales="" \
+        --fonts="" \
+        "boot/grub/grub.cfg=${BUILD}/boot/grub/grub.cfg" \
+        --output=/tmp/grub-core.img
+
+    cat \
+        /usr/lib/grub/i386-pc/cdboot.img \
+        /tmp/grub-core.img \
+        > ${TARGET}
+}
+
+grub-mkstandalone-efi() {
+    local TARGET=$1
+
+    local DEFAULT_MODULES=(part_gpt part_msdos fat iso9660 ext2 ${GRUB_EXTRA_MODULES:-})
+
+    grub-mkstandalone \
+        -O x86_64-efi \
+        --modules="${GRUB_MODULES:-$DEFAULT_MODULES}" \
+        --locales="" \
+        --themes="" \
+        --fonts="" \
+        --output=${TARGET}
+}
