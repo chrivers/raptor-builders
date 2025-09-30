@@ -11,7 +11,6 @@ LAYERS=/input
 OUTPUT=/output/iso
 BUILD=/output/build
 EFIBOOT_IMG=${BUILD}/efiboot.img
-ISOLINUX=${BUILD}/isolinux
 
 make_layer() {
     local NAME="$1"
@@ -30,7 +29,6 @@ maybe_break top
 mkdir -p ${BUILD}/EFI/BOOT
 mkdir -p ${BUILD}/live ${CACHE}/live
 mkdir -p ${BUILD}/boot/grub
-mkdir -p ${ISOLINUX}
 
 grub_deblive_menu_base > ${BUILD}/boot/grub/grub.cfg
 
@@ -66,17 +64,15 @@ for target in $(layerinfo_get_targets); do
         }
     done
 
-    grub_deblive_menu_entry $target "toram" >> ${BUILD}/EFI/BOOT/grub.cfg
+    grub_deblive_menu_entry $target "toram" >> ${BUILD}/boot/grub/grub.cfg
 done
+
+cp ${BUILD}/boot/grub/grub.cfg ${BUILD}/EFI/BOOT/grub.cfg
 
 Info "Building grub config"
 
-grub-mkstandalone -O x86_64-efi \
-    --modules="part_gpt part_msdos fat iso9660 ext2" \
-    --locales="" \
-    --themes="" \
-    --fonts="" \
-    --output="${BUILD}/EFI/BOOT/BOOTX64.EFI"
+grub-mkstandalone-bios ${BUILD}/bios.img
+grub-mkstandalone-efi ${BUILD}/EFI/BOOT/BOOTX64.EFI
 
 Info "Building efiboot image"
 
@@ -96,11 +92,7 @@ cd $BUILD
 
 maybe_break buildiso
 
-cp \
-    /usr/lib/ISOLINUX/isolinux.bin \
-    /usr/lib/ISOLINUX/isohdpfx.bin \
-    /usr/lib/syslinux/modules/bios/* \
-    ${ISOLINUX}
+cp -r /usr/lib/grub/i386-pc ${BUILD}/boot/grub/i386-pc/
 
 truncate -s0 $OUTPUT/debian-custom.iso
 
@@ -110,19 +102,22 @@ xorriso \
     -quiet \
     -full-iso9660-filenames \
     -volid "DEBLIVE" \
-    -joliet -joliet-long -rational-rock \
-    -isohybrid-mbr isolinux/isohdpfx.bin \
-    -b isolinux/isolinux.bin \
-    -c isolinux/boot.cat \
+    --grub2-boot-info \
+    --grub2-mbr /usr/lib/grub/i386-pc/boot_hybrid.img \
+    -eltorito-boot \
+    boot/grub/bios.img \
+    -no-emul-boot \
     -boot-load-size 4 \
     -boot-info-table \
-    -no-emul-boot \
+    --eltorito-catalog boot/grub/boot.cat \
     -eltorito-alt-boot \
     -e ${EFIBOOT_IMG:t} \
     -no-emul-boot \
     -isohybrid-gpt-basdat \
     -isohybrid-apm-hfsplus \
     -o ${OUTPUT}/debian-custom.iso \
-    ${BUILD}
+    -graft-points \
+    "${BUILD}" \
+    /boot/grub/bios.img=${BUILD}/bios.img
 
 Info "Complete"
