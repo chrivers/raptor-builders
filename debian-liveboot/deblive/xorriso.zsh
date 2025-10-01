@@ -6,6 +6,10 @@ build-dual-bootable-iso() {
 
     local LABEL=${LABEL:-"DEBLIVE"}
 
+    # We need to ensure we start with a blank file, but since the file might be
+    # bind mounted, truncate it instead of trying to delete it.
+    truncate -s0 ${OUTPUT}
+
     xorriso \
         -as mkisofs \
         -iso-level 3 \

@@ -67,8 +67,6 @@ grub-mkstandalone-efi ${BUILD}/EFI/BOOT/bootx64.efi /tmp/efiboot.img
 Info "Building iso"
 maybe-break buildiso
 
-truncate -s0 ${OUTPUT}
-
 build-dual-bootable-iso /tmp/bios.img /tmp/efiboot.img ${BUILD} ${OUTPUT}
 
 Info "Complete"
