@@ -3,6 +3,7 @@
 set -eu
 
 source ~/common.zsh
+source ~/squashfs.zsh
 source ~/grub.zsh
 source ~/layerinfo.zsh
 

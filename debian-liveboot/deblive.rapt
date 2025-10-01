@@ -1,6 +1,7 @@
 FROM liveboot-base
 
 COPY deblive/layerinfo.zsh /root/layerinfo.zsh
+COPY deblive/squashfs.zsh /root/squashfs.zsh
 COPY deblive/common.zsh /root/common.zsh
 COPY deblive/grub.zsh /root/grub.zsh
 COPY deblive/generate.sh /root/generate.sh
