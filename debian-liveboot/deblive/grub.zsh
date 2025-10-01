@@ -1,4 +1,4 @@
-grub_deblive_menu_base() {
+grub-deblive-menu-base() {
     cat <<EOF
 insmod part_gpt
 insmod part_msdos
@@ -14,7 +14,7 @@ set timeout=5
 EOF
 }
 
-grub_deblive_menu_entry() {
+grub-deblive-menu-entry() {
     local TARGET=$1
     local ARGS=$2
     local DEST=${DEST:-"boot/${target}"}

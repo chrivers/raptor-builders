@@ -12,7 +12,7 @@ OUTPUT=/output/debian-liveboot.iso
 BUILD=/output/build
 EFIBOOT_IMG=/tmp/efiboot.img
 
-make_layer() {
+make-layer() {
     local NAME="$1"
     local INPUT="${LAYERS}/$1"
     local DEST="${CACHE}/live"
@@ -24,32 +24,33 @@ make_layer() {
     cp ${SQUASHFS} ${BUILD}/live/
 }
 
-maybe_break top
+maybe-break top
 
 mkdir -p ${BUILD}/EFI/BOOT
 mkdir -p ${BUILD}/live ${CACHE}/live
 mkdir -p ${BUILD}/boot/grub
 
-for layer in $(layerinfo_get_unique_layers); do
+for layer in $(layerinfo-get-unique-layers); do
     Line "Building layer ${layer}" > /dev/stderr
-    make_layer $layer
+    make-layer $layer
 done
 
 Info "Finished building layers"
 
-grub_deblive_menu_base > ${BUILD}/boot/grub/grub.cfg
-for target in $(layerinfo_get_targets); do
-    grub_deblive_menu_entry $target "toram" >> ${BUILD}/boot/grub/grub.cfg
+
+grub-deblive-menu-base > ${BUILD}/boot/grub/grub.cfg
+for target in $(layerinfo-get-targets); do
+    grub-deblive-menu-entry $target "toram" >> ${BUILD}/boot/grub/grub.cfg
 done
 
-for target in $(layerinfo_get_targets); do
+for target in $(layerinfo-get-targets); do
     Info "Target [${target}]"
     local DEST="boot/${target}"
     mkdir -p ${BUILD}/${DEST}
 
     truncate -s0 "${BUILD}/live/${target}.module"
 
-    for layer in $(layerinfo_get_layers_for_target $target); do
+    for layer in $(layerinfo-get-layers-for-target $target); do
         echo "${layer}.squashfs" >> "${BUILD}/live/${target}.module"
 
         local INPUT="${LAYERS}/${layer}"
@@ -75,7 +76,7 @@ Info "Building grub image [efi]"
 grub-mkstandalone-efi ${BUILD}/EFI/BOOT/bootx64.efi /tmp/efiboot.img
 
 Info "Building iso"
-maybe_break buildiso
+maybe-break buildiso
 
 truncate -s0 ${OUTPUT}
 

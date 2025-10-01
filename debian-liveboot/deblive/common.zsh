@@ -30,7 +30,7 @@ function Error() {
     Log "${fg_bold[red]}" "E" $*
 }
 
-function maybe_break() {
+function maybe-break() {
     if [[ ",${opt_break}," == *,$1,* ]]; then
         Info "-------- Breaking at stage $1 --------"
         Line "process will continue after shell exit"
