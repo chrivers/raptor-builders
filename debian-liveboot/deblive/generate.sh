@@ -4,6 +4,7 @@ set -eu
 
 source ~/common.zsh
 source ~/squashfs.zsh
+source ~/xorriso.zsh
 source ~/grub.zsh
 source ~/layerinfo.zsh
 
