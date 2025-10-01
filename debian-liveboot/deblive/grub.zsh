@@ -111,7 +111,7 @@ grub-mkstandalone-efi() {
         --output=$EFI_TARGET
 
     truncate -s 20M ${IMG_TARGET}
-    mkfs.vfat ${IMG_TARGET}
+    mformat -i ${IMG_TARGET}
     mmd -i ${IMG_TARGET} ::/EFI ::/EFI/BOOT
-    mcopy -vi ${IMG_TARGET} ${EFI_TARGET} ::/EFI/BOOT/bootx64.efi
+    mcopy -i ${IMG_TARGET} ${EFI_TARGET} ::/EFI/BOOT/bootx64.efi
 }
