@@ -13,36 +13,16 @@ OUTPUT=/output/debian-liveboot.iso
 BUILD=/output/build
 EFIBOOT_IMG=/tmp/efiboot.img
 
-make-layer() {
-    local NAME="$1"
-    local INPUT="${LAYERS}/$1"
-    local DEST="${CACHE}/live"
-
-    local SQUASHFS=${DEST}/${NAME}.squashfs
-    if [[ ! $SQUASHFS -nt $INPUT ]]; then
-        mksquashfs ${INPUT} ${SQUASHFS} -noappend -comp zstd -quiet -tailends -progress
-    fi
-    cp ${SQUASHFS} ${BUILD}/live/
-}
-
 maybe-break top
 
 mkdir -p ${BUILD}/EFI/BOOT
-mkdir -p ${BUILD}/live ${CACHE}/live
 mkdir -p ${BUILD}/boot/grub
 
-for layer in $(layerinfo-get-unique-layers); do
-    Line "Building layer ${layer}" > /dev/stderr
-    make-layer $layer
-done
+Info "Building squashfs layers.."
+build-all-squashfs-layers
 
-Info "Finished building layers"
-
-
-grub-deblive-menu-base > ${BUILD}/boot/grub/grub.cfg
-for target in $(layerinfo-get-targets); do
-    grub-deblive-menu-entry $target "toram" >> ${BUILD}/boot/grub/grub.cfg
-done
+Info "Generating grub menu"
+grub-deblive-menu > ${BUILD}/boot/grub/grub.cfg
 
 for target in $(layerinfo-get-targets); do
     Info "Target [${target}]"
