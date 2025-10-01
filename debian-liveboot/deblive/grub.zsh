@@ -18,13 +18,23 @@ grub_deblive_menu_entry() {
     local TARGET=$1
     local ARGS=$2
     local DEST=${DEST:-"boot/${target}"}
+    local LABEL=${LABEL:-"DEBLIVE"}
 
     cat <<EOF
 menuentry "Debian Live [${TARGET}]" {
-    search --no-floppy --set=root --label DEBLIVE
+    search --no-floppy --set=root --label ${LABEL}
     linux (\$root)/${DEST}/vmlinuz boot=live toram module=${TARGET}
     initrd (\$root)/${DEST}/initrd
 }
+EOF
+}
+
+grub-redirect-config() {
+    local LABEL=${1:-"DEBLIVE"}
+
+    cat <<EOF
+search --no-floppy --set=root --label ${LABEL}
+source (\$root)/boot/grub/grub.cfg
 EOF
 }
 
@@ -52,13 +62,15 @@ grub-mkstandalone-bios() {
         ${GRUB_EXTRA_MODULES:-}
     )
 
+    grub-redirect-config > /tmp/grub.cfg
+
     grub-mkstandalone \
         --format=i386-pc \
         --install-modules="${GRUB_MODULES:-$DEFAULT_MODULES}" \
         --modules="${GRUB_MODULES:-$DEFAULT_MODULES}" \
         --locales="" \
         --fonts="" \
-        "boot/grub/grub.cfg=${BUILD}/boot/grub/grub.cfg" \
+        "boot/grub/grub.cfg=/tmp/grub.cfg" \
         --output=/tmp/grub-core.img
 
     cat \
@@ -68,7 +80,8 @@ grub-mkstandalone-bios() {
 }
 
 grub-mkstandalone-efi() {
-    local TARGET=$1
+    local EFI_TARGET=$1
+    local IMG_TARGET=$2
 
     local DEFAULT_MODULES=(
         part_gpt
@@ -79,11 +92,19 @@ grub-mkstandalone-efi() {
         ${GRUB_EXTRA_MODULES:-}
     )
 
+    grub-redirect-config > /tmp/grub.cfg
+
     grub-mkstandalone \
         -O x86_64-efi \
         --modules="${GRUB_MODULES:-$DEFAULT_MODULES}" \
         --locales="" \
         --themes="" \
         --fonts="" \
-        --output=${TARGET}
+        "boot/grub/grub.cfg=/tmp/grub.cfg" \
+        --output=$EFI_TARGET
+
+    truncate -s 20M ${IMG_TARGET}
+    mkfs.vfat ${IMG_TARGET}
+    mmd -i ${IMG_TARGET} ::/EFI ::/EFI/BOOT
+    mcopy -vi ${IMG_TARGET} ${EFI_TARGET} ::/EFI/BOOT/bootx64.efi
 }

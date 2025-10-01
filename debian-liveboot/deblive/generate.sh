@@ -10,7 +10,7 @@ CACHE=/cache
 LAYERS=/input
 OUTPUT=/output/debian-liveboot.iso
 BUILD=/output/build
-EFIBOOT_IMG=${BUILD}/efiboot.img
+EFIBOOT_IMG=/tmp/efiboot.img
 
 make_layer() {
     local NAME="$1"
@@ -30,14 +30,17 @@ mkdir -p ${BUILD}/EFI/BOOT
 mkdir -p ${BUILD}/live ${CACHE}/live
 mkdir -p ${BUILD}/boot/grub
 
-grub_deblive_menu_base > ${BUILD}/boot/grub/grub.cfg
-
 for layer in $(layerinfo_get_unique_layers); do
     Line "Building layer ${layer}" > /dev/stderr
     make_layer $layer
 done
 
 Info "Finished building layers"
+
+grub_deblive_menu_base > ${BUILD}/boot/grub/grub.cfg
+for target in $(layerinfo_get_targets); do
+    grub_deblive_menu_entry $target "toram" >> ${BUILD}/boot/grub/grub.cfg
+done
 
 for target in $(layerinfo_get_targets); do
     Info "Target [${target}]"
@@ -63,33 +66,15 @@ for target in $(layerinfo_get_targets); do
             Line "Found initrd: ${INITRD}"
         }
     done
-
-    grub_deblive_menu_entry $target "toram" >> ${BUILD}/boot/grub/grub.cfg
 done
 
-cp ${BUILD}/boot/grub/grub.cfg ${BUILD}/EFI/BOOT/grub.cfg
+Info "Building grub image [bios]"
+grub-mkstandalone-bios /tmp/bios.img
 
-Info "Building grub config"
-
-grub-mkstandalone-bios ${BUILD}/bios.img
-grub-mkstandalone-efi ${BUILD}/EFI/BOOT/BOOTX64.EFI
-
-Info "Building efiboot image"
-
-maybe_break efiboot
-
-truncate -s 20M ${EFIBOOT_IMG}
-mkfs.vfat ${EFIBOOT_IMG}
-mmd -i ${EFIBOOT_IMG} ::/EFI ::/EFI/BOOT
-mcopy -vi ${EFIBOOT_IMG} \
-      "${BUILD}/EFI/BOOT/BOOTX64.EFI" \
-      "${BUILD}/boot/grub/grub.cfg" \
-      ::/EFI/BOOT/
+Info "Building grub image [efi]"
+grub-mkstandalone-efi ${BUILD}/EFI/BOOT/bootx64.efi /tmp/efiboot.img
 
 Info "Building iso"
-
-cd $BUILD
-
 maybe_break buildiso
 
 truncate -s0 ${OUTPUT}
@@ -97,25 +82,27 @@ truncate -s0 ${OUTPUT}
 xorriso \
     -as mkisofs \
     -iso-level 3 \
-    -quiet \
+    -gui \
+    -r \
     -full-iso9660-filenames \
     -volid "DEBLIVE" \
+    -joliet -joliet-long \
     --grub2-boot-info \
     --grub2-mbr /usr/lib/grub/i386-pc/boot_hybrid.img \
-    -eltorito-boot \
-    boot/grub/bios.img \
+    --boot-catalog-hide \
+    \
+    -eltorito-boot boot/grub/bios.img \
     -no-emul-boot \
     -boot-load-size 4 \
     -boot-info-table \
-    --eltorito-catalog boot/grub/boot.cat \
-    -eltorito-alt-boot \
-    -e ${EFIBOOT_IMG:t} \
-    -no-emul-boot \
-    -isohybrid-gpt-basdat \
-    -isohybrid-apm-hfsplus \
-    -o ${OUTPUT} \
+    \
+    --efi-boot boot/grub/efi.img \
+    -efi-boot-part --efi-boot-image \
+    \
     -graft-points \
-    ${BUILD} \
-    /boot/grub/bios.img=${BUILD}/bios.img
+    /=${BUILD} \
+    /boot/grub/efi.img=/tmp/efiboot.img \
+    /boot/grub/bios.img=/tmp/bios.img \
+    --output ${OUTPUT} |& (grep -E 'UPDATE' || true)
 
 Info "Complete"
