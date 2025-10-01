@@ -29,6 +29,13 @@ menuentry "Debian Live [${TARGET}]" {
 EOF
 }
 
+grub-deblive-menu() {
+    grub-deblive-menu-base
+    for target in $(layerinfo-get-targets); do
+        grub-deblive-menu-entry $target "toram"
+    done
+}
+
 grub-redirect-config() {
     local LABEL=${1:-"DEBLIVE"}
 
