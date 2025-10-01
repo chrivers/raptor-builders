@@ -62,30 +62,6 @@ maybe-break buildiso
 
 truncate -s0 ${OUTPUT}
 
-xorriso \
-    -as mkisofs \
-    -iso-level 3 \
-    -gui \
-    -r \
-    -full-iso9660-filenames \
-    -volid "DEBLIVE" \
-    -joliet -joliet-long \
-    --grub2-boot-info \
-    --grub2-mbr /usr/lib/grub/i386-pc/boot_hybrid.img \
-    --boot-catalog-hide \
-    \
-    -eltorito-boot boot/grub/bios.img \
-    -no-emul-boot \
-    -boot-load-size 4 \
-    -boot-info-table \
-    \
-    --efi-boot boot/grub/efi.img \
-    -efi-boot-part --efi-boot-image \
-    \
-    -graft-points \
-    /=${BUILD} \
-    /boot/grub/efi.img=/tmp/efiboot.img \
-    /boot/grub/bios.img=/tmp/bios.img \
-    --output ${OUTPUT} |& (grep -E 'UPDATE' || true)
+build-dual-bootable-iso /tmp/bios.img /tmp/efiboot.img ${BUILD} ${OUTPUT}
 
 Info "Complete"
