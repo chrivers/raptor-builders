@@ -16,15 +16,19 @@ EOF
 
 grub-deblive-menu-entry() {
     local TARGET=$1
-    local ARGS=$2
-    local DEST=${DEST:-"boot/${target}"}
-    local LABEL=${LABEL:-"DEBLIVE"}
+    shift
+    local ARGS=$*
+
+    local BOOT_PATH=${BOOT_PATH:-"/boot"}
+    local GRUB_PATH=${GRUB_PATH:-"${BOOT_PATH}/grub"}
+    local GRUB_LABEL=${GRUB_LABEL:-"DEBLIVE"}
+    local TARGET_PATH=${TARGET_PATH:-"${BOOT_PATH}/${target}"}
 
     cat <<EOF
 menuentry "Debian Live [${TARGET}]" {
-    search --no-floppy --set=root --label ${LABEL}
-    linux (\$root)/${DEST}/vmlinuz boot=live toram module=${TARGET}
-    initrd (\$root)/${DEST}/initrd
+    search --no-floppy --set=root --label ${GRUB_LABEL}
+    linux (\$root)/${TARGET_PATH}/vmlinuz boot=live module=${TARGET} ${ARGS}
+    initrd (\$root)/${TARGET_PATH}/initrd
 }
 EOF
 }
@@ -37,11 +41,13 @@ grub-deblive-menu() {
 }
 
 grub-redirect-config() {
-    local LABEL=${1:-"DEBLIVE"}
+    local GRUB_LABEL=${GRUB_LABEL:-"DEBLIVE"}
+    local BOOT_PATH=${BOOT_PATH:-"/boot"}
+    local GRUB_PATH=${GRUB_PATH:-"${BOOT_PATH}/grub"}
 
     cat <<EOF
-search --no-floppy --set=root --label ${LABEL}
-source (\$root)/boot/grub/grub.cfg
+search --no-floppy --set=root --label ${GRUB_LABEL}
+source (\$root)${GRUB_PATH}/grub.cfg
 EOF
 }
 
@@ -88,7 +94,7 @@ grub-mkstandalone-bios() {
 
 grub-mkstandalone-efi() {
     local EFI_TARGET=$1
-    local IMG_TARGET=$2
+    local IMG_TARGET=${2:-}
 
     local DEFAULT_MODULES=(
         part_gpt
@@ -110,8 +116,10 @@ grub-mkstandalone-efi() {
         "boot/grub/grub.cfg=/tmp/grub.cfg" \
         --output=$EFI_TARGET
 
-    truncate -s 20M ${IMG_TARGET}
-    mformat -i ${IMG_TARGET}
-    mmd -i ${IMG_TARGET} ::/EFI ::/EFI/BOOT
-    mcopy -i ${IMG_TARGET} ${EFI_TARGET} ::/EFI/BOOT/bootx64.efi
+    if [[ -n $IMG_TARGET ]]; then
+        truncate -s 20M ${IMG_TARGET}
+        mformat -i ${IMG_TARGET}
+        mmd -i ${IMG_TARGET} ::/EFI ::/EFI/BOOT
+        mcopy -i ${IMG_TARGET} ${EFI_TARGET} ::/EFI/BOOT/bootx64.efi
+    fi
 }
