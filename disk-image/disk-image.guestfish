@@ -1,0 +1,44 @@
+add /output/disk.img
+run
+
+part-init /dev/sda gpt
+
+# 32mb esp: (2048 + (32 * 1024 * 1024) / 512 - 1)
+part-add /dev/sda p 2048 67583
+
+# 512-32mb boot: (2048 + (512 * 1024 * 1024) / 512 - 1)
+part-add /dev/sda p 67584 1050623
+
+# rest of disk
+part-add /dev/sda p 1050624 -34
+
+part-set-name /dev/sda 1 esp
+part-set-name /dev/sda 2 boot
+part-set-name /dev/sda 3 root
+
+part-set-gpt-type /dev/sda 1 c12a7328-f81f-11d2-ba4b-00a0c93ec93b
+part-set-gpt-type /dev/sda 2 0fc63daf-8483-4772-8e79-3d69d8477de4
+part-set-gpt-type /dev/sda 3 0fc63daf-8483-4772-8e79-3d69d8477de4
+
+part-set-gpt-guid /dev/sda 1 27e967a8-865f-4716-be25-b97c4866da32
+part-set-gpt-guid /dev/sda 2 cae3e18b-56bf-49ae-9d12-01c552c8e8a1
+part-set-gpt-guid /dev/sda 3 25952d6e-7685-4e53-9466-8468635dba64
+
+part-expand-gpt /dev/sda
+
+mkfs vfat /dev/sda1
+mkfs ext4 /dev/sda2 label:BOOT
+mkfs ext4 /dev/sda3
+
+mount /dev/sda3 /
+
+mkdir /boot
+mount /dev/sda2 /boot
+
+mkdir /boot/efi
+mount /dev/sda1 /boot/efi
+
+mkdir /boot/efi/EFI
+mkdir /boot/efi/EFI/BOOT
+
+tar-in /tmp/pipe /
