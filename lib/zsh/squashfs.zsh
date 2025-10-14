@@ -4,9 +4,15 @@ build-squashfs-layer() {
     local OUTPUT="${CACHE}/live/${NAME}.squashfs"
     local DESTDIR="${BUILD}/live/"
 
+    exec 4<>$OUTPUT.lock
+    flock 4
+
     if [[ ! $OUTPUT -nt $INPUT ]]; then
         mksquashfs ${INPUT} ${OUTPUT} -noappend -comp zstd -quiet -tailends -progress
     fi
+
+    flock -u 4
+
     cp ${OUTPUT} ${DESTDIR}
 }
 
