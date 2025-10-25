@@ -1,4 +1,4 @@
-FROM liveboot-base
+FROM debian-liveboot.base
 
 INCLUDE lib.zsh
 COPY debian-liveboot/generate.sh /root/generate.sh

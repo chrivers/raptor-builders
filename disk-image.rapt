@@ -1,4 +1,4 @@
-FROM disk-image-base
+FROM disk-image.base
 
 INCLUDE lib.zsh
 
