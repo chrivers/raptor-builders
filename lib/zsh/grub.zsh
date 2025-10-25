@@ -22,7 +22,7 @@ grub-deblive-menu-entry() {
     local BOOT_PATH=${BOOT_PATH:-"/boot"}
     local GRUB_PATH=${GRUB_PATH:-"${BOOT_PATH}/grub"}
     local GRUB_LABEL=${GRUB_LABEL:-"DEBLIVE"}
-    local TARGET_PATH=${TARGET_PATH:-"${BOOT_PATH}/${target}"}
+    local TARGET_PATH=${(q)${TARGET_PATH:-"${BOOT_PATH}/${target}"}}
 
     cat <<EOF
 menuentry "Debian Live [${TARGET}]" {
