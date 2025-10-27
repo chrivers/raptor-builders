@@ -4,10 +4,15 @@ build-squashfs-layer() {
     local OUTPUT="${CACHE}/live/${NAME}.squashfs"
     local DESTDIR="${BUILD}/live/"
 
-    exec 4<>$OUTPUT.lock
+    # Open output file, then take file lock on it
+    exec 4<>${OUTPUT}
     flock 4
 
-    if [[ ! $OUTPUT -nt $INPUT ]]; then
+    # Generate squashfs if:
+    #   file is empty (just created by flock)
+    #   - or -
+    #   input is newer than output
+    if [[ ! -s ${OUTPUT} || ${INPUT} -nt ${OUTPUT} ]]; then
         mksquashfs ${INPUT} ${OUTPUT} -noappend -comp zstd -quiet -tailends -progress -xattrs-exclude 'system.posix_acl_.+'
     fi
 
@@ -21,6 +26,6 @@ build-all-squashfs-layers() {
 
     for layer in $(layerinfo-get-unique-layers); do
         Line "  .. ${layer}"
-        build-squashfs-layer $layer
+        build-squashfs-layer ${layer}
     done
 }
