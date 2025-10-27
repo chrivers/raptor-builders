@@ -8,7 +8,7 @@ build-squashfs-layer() {
     flock 4
 
     if [[ ! $OUTPUT -nt $INPUT ]]; then
-        mksquashfs ${INPUT} ${OUTPUT} -noappend -comp zstd -quiet -tailends -progress
+        mksquashfs ${INPUT} ${OUTPUT} -noappend -comp zstd -quiet -tailends -progress -xattrs-exclude 'system.posix_acl_.+'
     fi
 
     flock -u 4
