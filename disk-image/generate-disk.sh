@@ -30,6 +30,13 @@ tar -cf /tmp/pipe -C ${LAYERS} . &
 export PART_START_EFI=2048
 export PART_START_BOOT=$((PART_START_EFI + (DISK_SPACE_EFI_MB * 1024 * 1024) / 512))
 export PART_START_ROOT=$((PART_START_BOOT + (DISK_SPACE_BOOT_MB * 1024 * 1024) / 512))
-guestfish -n --pipe-error --progress-bars -x -n -f /root/disk-image.guestfish
+
+guestfish \
+    -x \
+    --no-sync \
+    --pipe-error \
+    --progress-bars \
+    --add /output/disk.img \
+    --file /root/disk-image.guestfish
 
 Info "Complete"

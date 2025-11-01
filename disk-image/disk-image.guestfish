@@ -1,4 +1,3 @@
-add /output/disk.img
 run
 
 part-init /dev/sda gpt
