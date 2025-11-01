@@ -75,6 +75,11 @@ function test-uefi-vm() {
     local NAME=$2
     shift
 
+    local format="raw"
+    if [[ ${IMAGE:e} == "qcow2" ]]; then
+        format=qcow2
+    fi
+
     sudo kvm \
         -smp cpus=2 \
         -smbios type=0,uefi=on \
@@ -88,7 +93,7 @@ function test-uefi-vm() {
         -m 2G \
         -serial stdio \
         -display none \
-        -drive format=raw,file=${IMAGE} > ${MARKER}
+        -drive format=${format},file=${IMAGE} > ${MARKER}
 
     grep -qc "$REF_VALUE" ${MARKER}
 }
