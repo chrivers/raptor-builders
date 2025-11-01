@@ -2,7 +2,7 @@ FROM disk-image.base
 
 INCLUDE lib.zsh
 
-COPY disk-image/generate.sh /root/generate.sh
+COPY disk-image/generate-live.sh /root/generate.sh
 COPY disk-image/disk-image.guestfish /root/disk-image.guestfish
 
 MOUNT --simple cache  /cache
