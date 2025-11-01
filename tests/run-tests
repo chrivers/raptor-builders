@@ -8,7 +8,7 @@ source $BASEDIR/../lib/zsh/common.zsh
 
 MARKER=$(mktemp)
 REF_FILE=$(mktemp)
-REF_VALUE=$(grep -E '^ExecStart=echo' tests/test.service | cut -f2 -d'"')
+REF_VALUE=$(grep -E '^ExecStart=echo' $BASEDIR/test.service | cut -f2 -d'"')
 
 cleanup() {
     rm -f ${MARKER} ${REF_FILE}
@@ -24,15 +24,14 @@ sudo raptor make -qb %all
 
 function run-test() {
     local TEST=$1
-    local IMAGE=$BASEDIR/$2
+    local IMAGE=$2
     local NAME=$3
-    shift
 
-    LOG="Testing ${fg[cyan]}${NAME}${reset_color} [${fg_bold[yellow]}${TEST}${reset_color}: ${fg_bold[white]}${IMAGE}${reset_color}].. "
+    LOG="Testing ${fg[cyan]}${NAME}${reset_color} [${fg_bold[yellow]}${(r:10:)TEST}${reset_color}: ${fg_bold[white]}${IMAGE}${reset_color}].. "
     Line -n "${LOG}"
     truncate -s0 ${MARKER}
 
-    RES=$(test-${TEST} ${IMAGE} ${NAME}; echo $?)
+    RES=$(test-${TEST} ${BASEDIR}/${IMAGE} ${NAME}; echo $?)
     echo -n "\r" > /dev/stderr
 
     if [[ $RES -eq 0 ]]; then
@@ -42,7 +41,7 @@ function run-test() {
     fi
 }
 
-function test-ns() {
+function test-nspawn() {
     local IMAGE=$1
     local NAME=$2
     shift
@@ -51,7 +50,27 @@ function test-ns() {
     cmp ${MARKER} ${REF_FILE}
 }
 
-function test-vm() {
+function test-bios-vm() {
+    local IMAGE=$1
+    local NAME=$2
+    shift
+
+    sudo kvm \
+        -smp cpus=2 \
+        -smbios type=0,uefi=off \
+        -cpu host \
+        -machine type=q35,accel=kvm \
+        -enable-kvm \
+        -boot d \
+        -m 2G \
+        -serial stdio \
+        -display none \
+        -drive format=raw,file=${IMAGE} > ${MARKER}
+
+    grep -qc "$REF_VALUE" ${MARKER}
+}
+
+function test-uefi-vm() {
     local IMAGE=$1
     local NAME=$2
     shift
@@ -74,11 +93,12 @@ function test-vm() {
     grep -qc "$REF_VALUE" ${MARKER}
 }
 
-run-test ns output/disk.img "Disk image"
-run-test ns output/part.img "Part image"
+run-test nspawn output/disk.img "Disk image"
+run-test nspawn output/part.img "Part image"
 
-run-test vm output/disk.img "Disk image"
-run-test vm output/live.img "Live image"
-run-test vm output/live.iso "Live iso  "
+run-test uefi-vm output/disk.img "Disk image"
+run-test uefi-vm output/live.img "Live image"
+run-test uefi-vm output/live.iso "Live iso  "
+run-test bios-vm output/live.iso "Live iso  "
 
 echo "All tests successful"
