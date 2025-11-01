@@ -3,14 +3,9 @@ run
 
 part-init /dev/sda gpt
 
-# 32mb esp: (2048 + (32 * 1024 * 1024) / 512 - 1)
-part-add /dev/sda p 2048 67583
-
-# 512-32mb boot: (2048 + (512 * 1024 * 1024) / 512 - 1)
-part-add /dev/sda p 67584 1050623
-
-# rest of disk
-part-add /dev/sda p 1050624 -34
+<! echo part-add /dev/sda p ${PART_START_EFI}  $((PART_START_BOOT - 1))
+<! echo part-add /dev/sda p ${PART_START_BOOT} $((PART_START_ROOT - 1))
+<! echo part-add /dev/sda p ${PART_START_ROOT} -34
 
 part-set-name /dev/sda 1 esp
 part-set-name /dev/sda 2 boot
