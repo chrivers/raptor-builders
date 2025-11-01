@@ -39,3 +39,19 @@ mkdir /boot/efi
 mount /dev/sda1 /boot/efi
 
 tar-in /tmp/pipe /
+
+$ if generate_fstab
+write        /etc/fstab ""
+write-append /etc/fstab "PARTLABEL=root /          ext4 defaults 0 1\n"
+write-append /etc/fstab "PARTLABEL=boot /boot      ext4 defaults 0 2\n"
+write-append /etc/fstab "PARTLABEL=esp  /boot/efi  vfat defaults 0 2\n"
+$ endif
+
+$ if install_grub
+sh "grub-install --target x86_64-efi --removable"
+sh "update-grub"
+$ endif
+
+umount /boot/efi
+umount /boot
+umount /
