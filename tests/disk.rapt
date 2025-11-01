@@ -1,0 +1,4 @@
+FROM test
+
+RUN apt-get install -qy grub-efi-amd64-bin
+RUN apt-get clean

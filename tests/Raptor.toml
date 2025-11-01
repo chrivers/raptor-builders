@@ -1,0 +1,30 @@
+[raptor.link]
+rbuild = ".."
+
+[run.test-deblive]
+target = "$rbuild.deblive"
+cache = "cache2"
+input = ["test"]
+output = "output/live.iso"
+
+[run.test-disk-image]
+target = "$rbuild.disk-image"
+cache = "cache2"
+input = ["disk"]
+output = "output/disk.img"
+
+[run.test-live-disk-image]
+target = "$rbuild.live-disk-image"
+cache = "cache2"
+input = ["test"]
+output = "output/live.img"
+env = { "GRUB_TIMEOUT" = "0" }
+
+[run.test-part-image]
+target = "$rbuild.part-image"
+cache = "cache2"
+input = ["test"]
+output = "output/part.img"
+
+[group.all]
+run = ["test-deblive", "test-disk-image", "test-live-disk-image", "test-part-image"]

@@ -1,0 +1,16 @@
+[Unit]
+
+[Service]
+Type=oneshot
+
+# Log to ttyS0, so we can capture the output from nspawn or qemu
+StandardOutput=file:/dev/ttyS0
+
+# Random string for detecting service invocation in serial output
+ExecStart=echo "Nmaui0jnIOGZ4uINAeR5LYkzTztWkreL"
+
+# When done, power off the instance
+ExecStart=systemctl poweroff
+
+[Install]
+WantedBy=multi-user.target

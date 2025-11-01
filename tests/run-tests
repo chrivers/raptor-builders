@@ -1,0 +1,84 @@
+#!/bin/zsh
+
+set -eu
+
+BASEDIR=${0:P:h}
+
+source $BASEDIR/../lib/zsh/common.zsh
+
+MARKER=$(mktemp)
+REF_FILE=$(mktemp)
+REF_VALUE=$(grep -E '^ExecStart=echo' tests/test.service | cut -f2 -d'"')
+
+cleanup() {
+    rm -f ${MARKER} ${REF_FILE}
+}
+
+trap cleanup EXIT
+
+echo $REF_VALUE > $REF_FILE
+
+mkdir -p $BASEDIR/output
+
+sudo raptor make -qb %all
+
+function run-test() {
+    local TEST=$1
+    local IMAGE=$BASEDIR/$2
+    local NAME=$3
+    shift
+
+    LOG="Testing ${fg[cyan]}${NAME}${reset_color} [${fg_bold[yellow]}${TEST}${reset_color}: ${fg_bold[white]}${IMAGE}${reset_color}].. "
+    Line -n "${LOG}"
+    truncate -s0 ${MARKER}
+
+    RES=$(test-${TEST} ${IMAGE} ${NAME}; echo $?)
+    echo -n "\r" > /dev/stderr
+
+    if [[ $RES -eq 0 ]]; then
+        Info "${LOG}${fg_bold[green]}OK${reset_color}"
+    else
+        Error "${LOG}${fg_bold[red]}FAIL${reset_color}"
+    fi
+}
+
+function test-ns() {
+    local IMAGE=$1
+    local NAME=$2
+    shift
+
+    sudo systemd-nspawn -q --bind ${MARKER}:/dev/ttyS0 --console=read-only -i ${IMAGE} init > /dev/null
+    cmp ${MARKER} ${REF_FILE}
+}
+
+function test-vm() {
+    local IMAGE=$1
+    local NAME=$2
+    shift
+
+    sudo kvm \
+        -smp cpus=2 \
+        -smbios type=0,uefi=on \
+        -bios /usr/share/OVMF/OVMF_CODE_4M.fd \
+        -cpu host \
+        -machine type=q35,accel=kvm \
+        -enable-kvm \
+        -drive if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE_4M.fd \
+        -drive if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_VARS_4M.fd \
+        -boot d \
+        -m 2G \
+        -serial stdio \
+        -display none \
+        -drive format=raw,file=${IMAGE} > ${MARKER}
+
+    grep -qc "$REF_VALUE" ${MARKER}
+}
+
+run-test ns output/disk.img "Disk image"
+run-test ns output/part.img "Part image"
+
+run-test vm output/disk.img "Disk image"
+run-test vm output/live.img "Live image"
+run-test vm output/live.iso "Live iso  "
+
+echo "All tests successful"

@@ -1,0 +1,13 @@
+#!/bin/zsh
+
+set -eu
+
+BASEDIR=${0:P:h}
+
+source $BASEDIR/../lib/zsh/common.zsh
+
+Info "Cleaning test artifacts.."
+
+sudo rm $BASEDIR/cache $BASEDIR/cache2 $BASEDIR/layers $BASEDIR/output -rf
+
+Info "Done"
