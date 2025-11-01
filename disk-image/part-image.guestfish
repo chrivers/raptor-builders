@@ -1,0 +1,9 @@
+run
+
+mkfs ext4 /dev/sda label:root
+
+mount /dev/sda /
+
+tar-in /tmp/pipe /
+
+umount /
