@@ -1,0 +1,12 @@
+FROM disk-image.base
+
+INCLUDE lib.zsh
+
+COPY disk-image/generate-disk.sh /root/generate.sh
+RENDER disk-image/disk-image.guestfish /root/disk-image.guestfish generate_fstab=true install_grub=true
+
+MOUNT --overlay input  /input
+MOUNT --file    output /output/disk.img
+
+ENTRYPOINT /bin/zsh
+CMD /root/generate.sh
