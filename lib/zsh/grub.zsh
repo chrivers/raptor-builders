@@ -1,4 +1,6 @@
 grub-deblive-menu-base() {
+    local GRUB_TIMEOUT=${GRUB_TIMEOUT:-"5"}
+
     cat <<EOF
 insmod part_gpt
 insmod part_msdos
@@ -9,7 +11,7 @@ insmod all_video
 insmod font
 
 set default="0"
-set timeout=5
+set timeout=${GRUB_TIMEOUT}
 
 EOF
 }
