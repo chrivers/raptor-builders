@@ -38,7 +38,4 @@ mount /dev/sda2 /boot
 mkdir /boot/efi
 mount /dev/sda1 /boot/efi
 
-mkdir /boot/efi/EFI
-mkdir /boot/efi/EFI/BOOT
-
 tar-in /tmp/pipe /
