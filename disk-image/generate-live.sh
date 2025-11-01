@@ -14,7 +14,7 @@ LAYERS=/input
 OUTPUT=/output/disk.img
 BUILD=/output/build
 
-GRUB_LABEL=BOOT
+GRUB_LABEL=boot
 BOOT_PATH=/
 
 maybe-break top
