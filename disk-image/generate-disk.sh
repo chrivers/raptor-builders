@@ -15,7 +15,6 @@ compute-disk-space ${LAYERS}
 truncate -s${DISK_SPACE_SIZE_MB}M ${OUTPUT}
 
 Info "Building disk image"
-maybe-break buildiso
 
 mkfifo /tmp/pipe
 tar -cf /tmp/pipe -C ${LAYERS} . &
@@ -23,6 +22,8 @@ tar -cf /tmp/pipe -C ${LAYERS} . &
 export PART_START_EFI=2048
 export PART_START_BOOT=$((PART_START_EFI + (DISK_SPACE_EFI_MB * 1024 * 1024) / 512))
 export PART_START_ROOT=$((PART_START_BOOT + (DISK_SPACE_BOOT_MB * 1024 * 1024) / 512))
+
+maybe-break build
 
 guestfish \
     -x \
