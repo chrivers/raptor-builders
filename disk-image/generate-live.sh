@@ -34,8 +34,8 @@ extract-boot-files
 Info "Building grub image [efi]"
 grub-mkstandalone-efi ${BUILD}/boot/efi/EFI/BOOT/bootx64.efi
 
-SIZE_MB=$(compute-disk-space ${BUILD})
-truncate -s${SIZE_MB}M ${OUTPUT}
+compute-disk-space ${BUILD}
+truncate -s${DISK_SPACE_SIZE_MB}M ${OUTPUT}
 
 Info "Building disk image"
 maybe-break buildiso
