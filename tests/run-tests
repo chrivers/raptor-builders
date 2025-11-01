@@ -98,12 +98,16 @@ function test-uefi-vm() {
     grep -qc "$REF_VALUE" ${MARKER}
 }
 
-run-test nspawn output/disk.img "Disk image"
-run-test nspawn output/part.img "Part image"
+run-test nspawn  output/part.img   "Part image"
 
-run-test uefi-vm output/disk.img "Disk image"
-run-test uefi-vm output/live.img "Live image"
-run-test uefi-vm output/live.iso "Live iso  "
-run-test bios-vm output/live.iso "Live iso  "
+run-test nspawn  output/disk.img   "Disk image"
+run-test uefi-vm output/disk.img   "Disk image"
+run-test uefi-vm output/disk.qcow2 "Disk image"
+
+run-test uefi-vm output/live.img   "Live image"
+run-test uefi-vm output/live.qcow2 "Live image"
+
+run-test uefi-vm output/live.iso   "Live iso  "
+run-test bios-vm output/live.iso   "Live iso  "
 
 echo "All tests successful"

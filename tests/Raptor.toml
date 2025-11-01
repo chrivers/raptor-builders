@@ -6,12 +6,20 @@ target = "$rbuild.deblive"
 cache = "cache2"
 input = ["test"]
 output = "output/live.iso"
+env = { "GRUB_TIMEOUT" = "0" }
 
 [run.test-disk-image]
 target = "$rbuild.disk-image"
 cache = "cache2"
 input = ["disk"]
 output = "output/disk.img"
+
+[run.test-disk-image-qcow2]
+target = "$rbuild.disk-image"
+cache = "cache2"
+input = ["disk"]
+output = "output/disk.qcow2"
+env = { "OUTPUT_FORMAT" = "qcow2" }
 
 [run.test-live-disk-image]
 target = "$rbuild.live-disk-image"
@@ -20,6 +28,13 @@ input = ["test"]
 output = "output/live.img"
 env = { "GRUB_TIMEOUT" = "0" }
 
+[run.test-live-disk-image-qcow2]
+target = "$rbuild.live-disk-image"
+cache = "cache2"
+input = ["test"]
+output = "output/live.qcow2"
+env = { "GRUB_TIMEOUT" = "0", "OUTPUT_FORMAT" = "qcow2" }
+
 [run.test-part-image]
 target = "$rbuild.part-image"
 cache = "cache2"
@@ -27,4 +42,11 @@ input = ["test"]
 output = "output/part.img"
 
 [group.all]
-run = ["test-deblive", "test-disk-image", "test-live-disk-image", "test-part-image"]
+run = [
+    "test-deblive",
+    "test-disk-image",
+    "test-disk-image-qcow2",
+    "test-live-disk-image",
+    "test-live-disk-image-qcow2",
+    "test-part-image",
+]
