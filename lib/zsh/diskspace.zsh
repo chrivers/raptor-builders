@@ -16,3 +16,18 @@ function compute-disk-space() {
     Line "  -----"
     Line "  total: ${DISK_SPACE_SIZE_MB}M"
 }
+
+function compute-part-space() {
+    local TARGET=$1
+
+    Info "Computing partition space"
+
+    DISK_SPACE_FREE_MB=${FREE_MB:-512}
+    DISK_SPACE_USED_MB=${USED_MB:-$(du -sm ${TARGET} | cut -f1 -d$'\t')}
+    DISK_SPACE_SIZE_MB=${SIZE_MB:-$((DISK_SPACE_USED_MB + DISK_SPACE_FREE_MB))}
+
+    Line "  used:  ${DISK_SPACE_USED_MB}M"
+    Line "  free:  ${DISK_SPACE_FREE_MB}M"
+    Line "  -----"
+    Line "  total: ${DISK_SPACE_SIZE_MB}M"
+}
