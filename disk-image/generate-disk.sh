@@ -3,18 +3,11 @@
 set -eu
 
 source ~/common.zsh
-source ~/squashfs.zsh
-source ~/grub.zsh
-source ~/bootfiles.zsh
-source ~/layerinfo.zsh
 source ~/diskspace.zsh
 
 CACHE=/cache
 LAYERS=/input
 OUTPUT=/output/disk.img
-
-GRUB_LABEL=BOOT
-BOOT_PATH=/
 
 maybe-break top
 
