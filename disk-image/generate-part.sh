@@ -12,7 +12,7 @@ OUTPUT=/output/disk.img
 maybe-break top
 
 compute-part-space ${LAYERS}
-truncate -s${DISK_SPACE_SIZE_MB}M ${OUTPUT}
+qemu-img create -f ${OUTPUT_FORMAT:-raw} ${OUTPUT} ${DISK_SPACE_SIZE_MB}M
 
 Info "Building disk image"
 
@@ -26,6 +26,7 @@ guestfish \
     --no-sync \
     --pipe-error \
     --progress-bars \
+    --format=${OUTPUT_FORMAT:-raw} \
     --add /output/disk.img \
     --file /root/part-image.guestfish
 
