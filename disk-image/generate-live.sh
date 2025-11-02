@@ -7,13 +7,14 @@ source ~/squashfs.zsh
 source ~/grub.zsh
 source ~/bootfiles.zsh
 source ~/layerinfo.zsh
+source ~/diskspace.zsh
 
 CACHE=/cache
 LAYERS=/input
 OUTPUT=/output/disk.img
 BUILD=/output/build
 
-GRUB_LABEL=BOOT
+GRUB_LABEL=boot
 BOOT_PATH=/
 
 maybe-break top
@@ -33,26 +34,26 @@ extract-boot-files
 Info "Building grub image [efi]"
 grub-mkstandalone-efi ${BUILD}/boot/efi/EFI/BOOT/bootx64.efi
 
-Info "Computing disk space"
-EFI_MB=32
-BOOT_MB=512
-USED_MB=$(du -sm ${BUILD} | cut -f1 -d$'\t')
-FREE_MB=512
-SIZE_MB=$((EFI_MB + BOOT_MB + USED_MB + FREE_MB))
-Line "  efi:   ${EFI_MB}M"
-Line "  boot:  ${BOOT_MB}M"
-Line "  used:  ${USED_MB}M"
-Line "  free:  ${FREE_MB}M"
-Line "  -----"
-Line "  total: ${SIZE_MB}M"
-
-truncate -s${SIZE_MB}M ${OUTPUT}
+compute-disk-space ${BUILD}
+qemu-img create -f ${OUTPUT_FORMAT:-raw} ${OUTPUT} ${DISK_SPACE_SIZE_MB}M
 
 Info "Building disk image"
 maybe-break buildiso
 
 mkfifo /tmp/pipe
 tar -cvf /tmp/pipe -C ${BUILD} . &
-guestfish --progress-bars -x -n -f /root/disk-image.guestfish
+
+export PART_START_EFI=2048
+export PART_START_BOOT=$((PART_START_EFI + (DISK_SPACE_EFI_MB * 1024 * 1024) / 512))
+export PART_START_ROOT=$((PART_START_BOOT + (DISK_SPACE_BOOT_MB * 1024 * 1024) / 512))
+
+guestfish \
+    -x \
+    --no-sync \
+    --pipe-error \
+    --progress-bars \
+    --format=${OUTPUT_FORMAT:-raw} \
+    --add /output/disk.img \
+    --file /root/disk-image.guestfish
 
 Info "Complete"

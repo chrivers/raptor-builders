@@ -1,24 +1,18 @@
-add /output/disk.img
 run
 
 part-init /dev/sda gpt
 
-# 32mb esp: (2048 + (32 * 1024 * 1024) / 512 - 1)
-part-add /dev/sda p 2048 67583
-
-# 512-32mb boot: (2048 + (512 * 1024 * 1024) / 512 - 1)
-part-add /dev/sda p 67584 1050623
-
-# rest of disk
-part-add /dev/sda p 1050624 -34
+<! echo part-add /dev/sda p ${PART_START_EFI}  $((PART_START_BOOT - 1))
+<! echo part-add /dev/sda p ${PART_START_BOOT} $((PART_START_ROOT - 1))
+<! echo part-add /dev/sda p ${PART_START_ROOT} -34
 
 part-set-name /dev/sda 1 esp
 part-set-name /dev/sda 2 boot
 part-set-name /dev/sda 3 root
 
-part-set-gpt-type /dev/sda 1 c12a7328-f81f-11d2-ba4b-00a0c93ec93b
-part-set-gpt-type /dev/sda 2 0fc63daf-8483-4772-8e79-3d69d8477de4
-part-set-gpt-type /dev/sda 3 0fc63daf-8483-4772-8e79-3d69d8477de4
+<! echo part-set-gpt-type /dev/sda 1 $(systemd-id128 show -uP esp)
+<! echo part-set-gpt-type /dev/sda 2 $(systemd-id128 show -uP xbootldr)
+<! echo part-set-gpt-type /dev/sda 3 $(systemd-id128 show -uP root)
 
 part-set-gpt-guid /dev/sda 1 27e967a8-865f-4716-be25-b97c4866da32
 part-set-gpt-guid /dev/sda 2 cae3e18b-56bf-49ae-9d12-01c552c8e8a1
@@ -26,9 +20,9 @@ part-set-gpt-guid /dev/sda 3 25952d6e-7685-4e53-9466-8468635dba64
 
 part-expand-gpt /dev/sda
 
-mkfs vfat /dev/sda1
-mkfs ext4 /dev/sda2 label:BOOT
-mkfs ext4 /dev/sda3
+mkfs vfat /dev/sda1 label:esp
+mkfs ext4 /dev/sda2 label:boot
+mkfs ext4 /dev/sda3 label:root
 
 mount /dev/sda3 /
 
@@ -38,7 +32,26 @@ mount /dev/sda2 /boot
 mkdir /boot/efi
 mount /dev/sda1 /boot/efi
 
-mkdir /boot/efi/EFI
-mkdir /boot/efi/EFI/BOOT
-
 tar-in /tmp/pipe /
+
+$ if generate_fstab
+write        /etc/fstab ""
+write-append /etc/fstab "LABEL=root /          ext4 defaults 0 1\n"
+write-append /etc/fstab "LABEL=boot /boot      ext4 defaults 0 2\n"
+write-append /etc/fstab "LABEL=esp  /boot/efi  vfat defaults 0 2\n"
+$ endif
+
+$ if install_grub
+##
+## This workaround help generate an image that works both in qemu and with
+## systemd-nspawn, but it's disabled until a cleaner solution can be found.
+##
+## sh "echo 'GRUB_CMDLINE_LINUX_DEFAULT=\"$GRUB_CMDLINE_LINUX_DEFAULT rw\"' >> /etc/default/grub"
+##
+sh "grub-install --target x86_64-efi --removable"
+sh "update-grub"
+$ endif
+
+umount /boot/efi
+umount /boot
+umount /

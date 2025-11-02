@@ -4,3 +4,4 @@ COPY zsh/squashfs.zsh /root/squashfs.zsh
 COPY zsh/xorriso.zsh /root/xorriso.zsh
 COPY zsh/common.zsh /root/common.zsh
 COPY zsh/grub.zsh /root/grub.zsh
+COPY zsh/diskspace.zsh /root/diskspace.zsh

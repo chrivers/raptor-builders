@@ -7,7 +7,13 @@ function Log() {
     local mark=$2
     shift 2
 
-    echo "${fg_bold[blue]}[${color}${mark}${fg_bold[blue]}]${reset_color} $*" > /dev/stderr
+    local n=""
+    if [[ $1 == "-n" ]]; then
+        n="-n"
+        shift
+    fi
+
+    echo $n "${fg_bold[blue]}[${color}${mark}${fg_bold[blue]}]${reset_color} $*" > /dev/stderr
 }
 
 function Line() {
