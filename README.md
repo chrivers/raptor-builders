@@ -16,16 +16,19 @@ However, not all combinations are possible. For example, a physical machine will
 not boot a `qcow2` image for virtual machines, but `qemu` will be able to boot
 either `qcow2` or `raw` images.
 
-The table below provides an overview of the possible options:
+The table below provides an overview of the possible options.
 
-| Builder           | Format  | `systemd-nspawn` | VM (UEFI) | VM (BIOS) | Hardware (UEFI) | Hardware (BIOS) |
-|:------------------|---------|:-----------------|:----------|:----------|:----------------|:----------------|
-| `deblive`         | `iso`   | ❌               | ✅        | ✅        | ✅              | ✅              |
-| `live-disk-image` | `qcow2` | ❌               | ✅        | ❌        | ❌              | ❌              |
-| `live-disk-image` | `raw`   | ❌               | ✅        | ❌        | ✅              | ❌              |
-| `disk-image`      | `qcow2` | ❌               | ✅        | ❌        | ❌              | ❌              |
-| `disk-image`      | `raw`   | ✅               | ✅        | ❌        | ✅              | ❌              |
-| `part-image`      | `raw`   | ✅               | ❌        | ❌        | ❌              | ❌              |
+In the table, "VM" refers to virtual machines (e.g. `qemu`), while "HW" refers
+to running on physical machines.
+
+| Builder           | Format  | `systemd-nspawn` | VM (UEFI) | VM (BIOS) | HW (UEFI) | HW (BIOS) |
+|:------------------|---------|:-----------------|:----------|:----------|:----------|:----------|
+| `deblive`         | `iso`   | ❌               | ✅        | ✅        | ✅        | ✅        |
+| `live-disk-image` | `qcow2` | ❌               | ✅        | ❌        | ❌        | ❌        |
+| `live-disk-image` | `raw`   | ❌               | ✅        | ❌        | ✅        | ❌        |
+| `disk-image`      | `qcow2` | ❌               | ✅        | ❌        | ❌        | ❌        |
+| `disk-image`      | `raw`   | ✅               | ✅        | ❌        | ✅        | ❌        |
+| `part-image`      | `raw`   | ✅               | ❌        | ❌        | ❌        | ❌        |
 
 Currently, booting in BIOS mode is only supported by the `deblive` builder, but
 the `live-disk-image` and `disk-image` builders could possibly be extended to
