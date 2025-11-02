@@ -6,12 +6,12 @@ BASEDIR=${0:P:h}
 
 source $BASEDIR/../lib/zsh/common.zsh
 
-MARKER=$(mktemp)
-REF_FILE=$(mktemp)
+TEST_DIR=$(mktemp -d)
+REF_FILE="${TEST_DIR}/ref"
 REF_VALUE=$(grep -E '^ExecStart=echo' $BASEDIR/test.service | cut -f2 -d'"')
 
 cleanup() {
-    rm -f ${MARKER} ${REF_FILE}
+    rm -rf ${TEST_DIR}
 }
 
 trap cleanup EXIT
@@ -27,14 +27,14 @@ function run-test() {
     local IMAGE=$2
     local NAME=$3
 
-    LOG="Testing ${fg[cyan]}${NAME}${reset_color} [${fg_bold[yellow]}${(r:10:)TEST}${reset_color}: ${fg_bold[white]}${IMAGE}${reset_color}].. "
-    Line -n "${LOG}"
+    LOG="Testing ${fg[cyan]}${NAME}${reset_color} [${fg_bold[yellow]}${(r:10:)TEST}${reset_color}: ${fg_bold[white]}${(r:20:)IMAGE}${reset_color}].. "
+
+    MARKER=${TEST_DIR}/marker.${TEST//[\/ ]/-}.${IMAGE//[\/ ]/-}.${NAME//[\/ ]/-}
     truncate -s0 ${MARKER}
 
-    RES=$(test-${TEST} ${BASEDIR}/${IMAGE} ${NAME}; echo $?)
-    echo -n "\r" > /dev/stderr
+    test-${TEST} ${BASEDIR}/${IMAGE} ${NAME}
 
-    if [[ $RES -eq 0 ]]; then
+    if grep -qc "$REF_VALUE" ${MARKER}; then
         Info "${LOG}${fg_bold[green]}OK${reset_color}"
     else
         Error "${LOG}${fg_bold[red]}FAIL${reset_color}"
@@ -46,34 +46,13 @@ function test-nspawn() {
     local NAME=$2
     shift
 
-    sudo systemd-nspawn -q --bind ${MARKER}:/dev/ttyS0 --console=read-only -i ${IMAGE} init > /dev/null
-    cmp ${MARKER} ${REF_FILE}
+    sudo systemd-nspawn -q --bind $MARKER:/dev/ttyS0 --console=read-only -i ${IMAGE} init > /dev/null
 }
 
-function test-bios-vm() {
+function test-vm() {
     local IMAGE=$1
     local NAME=$2
-    shift
-
-    sudo kvm \
-        -smp cpus=2 \
-        -smbios type=0,uefi=off \
-        -cpu host \
-        -machine type=q35,accel=kvm \
-        -enable-kvm \
-        -boot d \
-        -m 2G \
-        -serial stdio \
-        -display none \
-        -drive format=raw,file=${IMAGE} > ${MARKER}
-
-    grep -qc "$REF_VALUE" ${MARKER}
-}
-
-function test-uefi-vm() {
-    local IMAGE=$1
-    local NAME=$2
-    shift
+    shift 2
 
     local format="raw"
     if [[ ${IMAGE:e} == "qcow2" ]]; then
@@ -81,33 +60,55 @@ function test-uefi-vm() {
     fi
 
     sudo kvm \
-        -smp cpus=2 \
-        -smbios type=0,uefi=on \
-        -bios /usr/share/OVMF/OVMF_CODE_4M.fd \
-        -cpu host \
-        -machine type=q35,accel=kvm \
-        -enable-kvm \
-        -drive if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE_4M.fd \
-        -drive if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_VARS_4M.fd \
-        -boot d \
-        -m 2G \
-        -serial stdio \
-        -display none \
-        -drive format=${format},file=${IMAGE} > ${MARKER}
-
-    grep -qc "$REF_VALUE" ${MARKER}
+         -smp cpus=2 \
+         -cpu host \
+         -machine type=q35,accel=kvm \
+         -enable-kvm \
+         -boot d \
+         -m 2G \
+         -serial stdio \
+         -display none \
+         -drive format=${format},file=${IMAGE} > ${MARKER} \
+         $*
 }
 
-run-test nspawn  output/part.img   "Part image"
+function test-bios-vm() {
+    local IMAGE=$1
+    local NAME=$2
+    shift 2
 
-run-test nspawn  output/disk.img   "Disk image"
-run-test uefi-vm output/disk.img   "Disk image"
-run-test uefi-vm output/disk.qcow2 "Disk image"
+    test-vm $IMAGE $NAME
+}
 
-run-test uefi-vm output/live.img   "Live image"
-run-test uefi-vm output/live.qcow2 "Live image"
+function test-uefi-vm() {
+    local IMAGE=$1
+    local NAME=$2
+    shift 2
 
-run-test uefi-vm output/live.iso   "Live iso  "
-run-test bios-vm output/live.iso   "Live iso  "
+    test-vm \
+        $IMAGE \
+        $NAME \
+        -smbios type=0,uefi=on \
+        -bios /usr/share/OVMF/OVMF_CODE_4M.fd \
+        -drive if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE_4M.fd \
+        -drive if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_VARS_4M.fd
+}
+
+run-test nspawn  output/part.img   "Part image" &
+
+run-test nspawn  output/disk.img   "Disk image" &
+run-test uefi-vm output/disk.img   "Disk image" &
+run-test uefi-vm output/disk.qcow2 "Disk image" &
+
+run-test uefi-vm output/live.img   "Live image" &
+run-test uefi-vm output/live.qcow2 "Live image" &
+
+run-test uefi-vm output/live.iso   "Live iso  " &
+
+wait
+
+run-test bios-vm output/live.iso   "Live iso  " &
+
+wait
 
 echo "All tests successful"
