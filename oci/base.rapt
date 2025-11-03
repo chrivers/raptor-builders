@@ -1,0 +1,4 @@
+FROM docker://debian:trixie
+
+RUN apt-get -qy update
+RUN apt-get -qy install python3
