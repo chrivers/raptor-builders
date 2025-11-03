@@ -28,6 +28,7 @@ to running on physical machines.
 | `disk-image`      | `qcow2` | ❌               | ✅        | ❌        | ❌        | ❌        |
 | `disk-image`      | `raw`   | ✅               | ✅        | ❌        | ✅        | ❌        |
 | `part-image`      | `raw`   | ✅               | ❌        | ❌        | ❌        | ❌        |
+| `docker-image`    | `tar`   | ❌               | ❌        | ❌        | ❌        | ❌        |
 
 Currently, booting in BIOS mode is only supported by the `deblive` builder, but
 the `live-disk-image` and `disk-image` builders could possibly be extended to

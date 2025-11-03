@@ -1,0 +1,9 @@
+FROM oci.base
+
+MOUNT --simple --optional cache /cache
+MOUNT --layers input  /input
+MOUNT --file   output /output/image.tar
+
+COPY --chmod 0755 oci/generate.py /root/generate.py
+
+CMD /root/generate.py
