@@ -3,11 +3,16 @@
 import os
 import sys
 import json
+import shutil
+import tempfile
 import subprocess
 
+INPUT  = "/input"
 OUTPUT = "/output/image.tar"
-BUILD  = "/build"
-
+CACHE  = "/cache"
+LAYERS = f"{CACHE}/layers"
+BUILD  = f"{CACHE}/build"
+BLOBS_SHA256 = "blobs/sha256"
 
 def info(msg):
     blue  = f"\x1B[34;1m"
@@ -21,14 +26,16 @@ def read_json(filename):
 
 
 def write_json(filename, js):
-    with open(filename, "w") as fd:
+    tmpname = f"{filename}.tmp"
+    with open(tmpname, "w") as fd:
         fd.write(json.dumps(js, indent=4))
+    os.replace(tmpname, filename)
 
 
 def write_blob(filename, mimetype):
     hash = subprocess.check_output(["sha256sum", filename], text=True).split()[0]
     size = os.path.getsize(filename)
-    os.rename(filename, f"blobs/sha256/{hash}")
+    os.replace(filename, f"{BLOBS_SHA256}/{hash}")
 
     layer_info = {
         "mediaType": mimetype,
@@ -49,21 +56,32 @@ MIME_TYPE_IMAGE_CONFIG   = "application/vnd.oci.image.config.v1+json"
 MIME_TYPE_IMAGE_MANIFEST = "application/vnd.oci.image.manifest.v1+json"
 MIME_TYPE_IMAGE_INDEX    = "application/vnd.oci.image.index.v1+json"
 
-def main():
-    os.mkdir(BUILD)
-    os.chdir(BUILD)
-    os.makedirs("blobs/sha256")
-
-    raptor_info = read_json("/input/raptor.json")
+def build():
+    raptor_info = read_json(f"{INPUT}/raptor.json")
     target = raptor_info["targets"][0]
 
     info(f"Building layers for target [{target}]..")
     layers = []
     for layer in raptor_info["layers"][target]:
         TMP = "tmp.tar"
-        info(f" .. [{layer}]")
-        subprocess.check_call(["tar", "-cf", TMP, "-C", f"/input/{layer}", "."])
+        layer_id = layer.split("-")[-1]
+        cache_blob = f"{LAYERS}/{layer_id}"
+        cache_json = f"{cache_blob}.json"
+        try:
+            layer_info = read_json(cache_json)
+            info(f" .. [{layer}] (cached)")
+            hash = layer_info["digest"].split(":")[1]
+            os.link(cache_blob, f"{BLOBS_SHA256}/{hash}")
+            layers.append(layer_info)
+            continue
+        except Exception as exc:
+            pass
+
+        info(f" .. [{layer}] (new)")
+        subprocess.check_call(["tar", "-cf", TMP, "-C", f"{INPUT}/{layer}", "."])
+        os.link(TMP, cache_blob)
         layer_info = write_blob(TMP, MIME_TYPE_IMAGE_LAYER)
+        write_json(cache_json, layer_info)
         layers.append(layer_info)
 
     config = {
@@ -102,9 +120,9 @@ def main():
 
     manifest = [
         {
-            "Config": config_blob["digest"].replace("sha256:", "blobs/sha256/"),
+            "Config": config_blob["digest"].replace("sha256:", f"{BLOBS_SHA256}/"),
             "RepoTags": [f"{refname}:latest"],
-            "Layers": [layer["digest"].replace("sha256:", "blobs/sha256/") for layer in layers],
+            "Layers": [layer["digest"].replace("sha256:", f"{BLOBS_SHA256}/") for layer in layers],
             "LayerSources": { item["digest"]: item for item in layers }
         }
     ]
@@ -119,6 +137,15 @@ def main():
 
     info(f"Done")
 
+
+def main():
+    os.makedirs(LAYERS, exist_ok=True)
+    os.makedirs(BUILD, exist_ok=True)
+
+    with tempfile.TemporaryDirectory(dir=BUILD) as build_dir:
+        os.chdir(build_dir)
+        os.makedirs(BLOBS_SHA256)
+        build()
 
 if __name__ == "__main__":
     main()
