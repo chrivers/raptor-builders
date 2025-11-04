@@ -36,5 +36,5 @@ support this, in the future.
 
 ## Documentation
 
-📕 The [raptor book](https://chrivers.github.io/raptor/builders/overview/)
-documents each build container in detail
+📕 The [raptor book](https://chrivers.github.io/raptor/builders/) documents each
+build container in detail
