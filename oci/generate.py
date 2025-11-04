@@ -5,6 +5,7 @@ import sys
 import json
 import shutil
 import tempfile
+import datetime
 import subprocess
 
 INPUT  = "/input"
@@ -12,7 +13,8 @@ OUTPUT = "/output/image.tar"
 CACHE  = "/cache"
 LAYERS = f"{CACHE}/layers"
 BUILD  = f"{CACHE}/build"
-BLOBS_SHA256 = "blobs/sha256"
+BLOBS  = "blobs"
+BLOBS_SHA256 = f"{BLOBS}/sha256"
 
 def info(msg):
     blue  = f"\x1B[34;1m"
@@ -29,12 +31,14 @@ def write_json(filename, js):
     tmpname = f"{filename}.tmp"
     with open(tmpname, "w") as fd:
         fd.write(json.dumps(js, indent=4))
+    os.utime(tmpname, ns=(0,0))
     os.replace(tmpname, filename)
 
 
 def write_blob(filename, mimetype):
     hash = subprocess.check_output(["sha256sum", filename], text=True).split()[0]
     size = os.path.getsize(filename)
+    os.utime(filename, ns=(0,0))
     os.replace(filename, f"{BLOBS_SHA256}/{hash}")
 
     layer_info = {
@@ -79,15 +83,20 @@ def build():
 
         info(f" .. [{layer}] (new)")
         subprocess.check_call(["tar", "-cf", TMP, "-C", f"{INPUT}/{layer}", "."])
+        os.utime(TMP, ns=(0,0))
         os.link(TMP, cache_blob)
         layer_info = write_blob(TMP, MIME_TYPE_IMAGE_LAYER)
         write_json(cache_json, layer_info)
         layers.append(layer_info)
 
+    newest = max(os.stat(f"{INPUT}/{layer}").st_mtime for layer in raptor_info["layers"][target])
+    created = datetime.datetime.fromtimestamp(newest).astimezone(datetime.UTC)
+
     config = {
         # FIXME: don't assume os and arch
         "architecture": "amd64",
         "os": "linux",
+        "created": created.strftime("%Y-%m-%dT%H:%M:%S.%f%:z"),
         "rootfs": {
             "type": "layers",
             "diff_ids": [layer["digest"] for layer in layers],
@@ -133,6 +142,8 @@ def build():
 
     info(f"Building tar for target [{target}]")
 
+    os.utime(BLOBS, ns=(0,0))
+    os.utime(BLOBS_SHA256, ns=(0,0))
     subprocess.check_call(["tar", "-cf", OUTPUT, "blobs", "index.json", "manifest.json", "oci-layout"])
 
     info(f"Done")
