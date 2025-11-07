@@ -1,0 +1,17 @@
+FROM docker://mageia
+
+INCLUDE basic-setup nameserver="1.1.1.1" hostname="mageia"
+
+RUN dnf install -y grub2-efi kernel-server dracut squashfs-tools procps-ng
+RUN dnf reinstall -y locales
+
+WRITE "omit_dracutmodules=\"\"\n" /etc/dracut.conf.d/60-mageia-override.conf
+RUN sed -i -re "s/^wait_for_dev.*/\\x23\\0/" /usr/lib/dracut/modules.d/90lvm/non-hostonly-init-lvm.sh
+
+RUN dracut --no-hostonly --regenerate-all --force
+RUN rm -f /boot/efi
+RUN mv -v /boot/EFI /boot/efi
+
+RUN usermod -p "" root
+
+RUN systemctl disable network-up
