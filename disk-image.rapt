@@ -2,6 +2,7 @@ FROM disk-image.base
 
 INCLUDE lib.zsh
 
+COPY --chmod 0755 disk-image/log.sh /usr/local/bin/log.sh
 COPY disk-image/generate-disk.sh /root/generate.sh
 RENDER disk-image/disk-image.guestfish /root/disk-image.guestfish generate_fstab=true install_grub=true
 

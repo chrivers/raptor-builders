@@ -1,4 +1,8 @@
+! log.sh "Starting guestfish.."
+
 run
+
+! log.sh "Starting partitioning.."
 
 part-init /dev/sda gpt
 
@@ -6,23 +10,35 @@ part-init /dev/sda gpt
 <! echo part-add /dev/sda p ${PART_START_BOOT} $((PART_START_ROOT - 1))
 <! echo part-add /dev/sda p ${PART_START_ROOT} -34
 
+! log.sh "  ..part-set-name"
+
 part-set-name /dev/sda 1 esp
 part-set-name /dev/sda 2 boot
 part-set-name /dev/sda 3 root
+
+! log.sh "  ..part-set-gpt-type"
 
 <! echo part-set-gpt-type /dev/sda 1 $(systemd-id128 show -uP esp)
 <! echo part-set-gpt-type /dev/sda 2 $(systemd-id128 show -uP xbootldr)
 <! echo part-set-gpt-type /dev/sda 3 $(systemd-id128 show -uP root)
 
+! log.sh "  ..part-set-gpt-uuid"
+
 part-set-gpt-guid /dev/sda 1 27e967a8-865f-4716-be25-b97c4866da32
 part-set-gpt-guid /dev/sda 2 cae3e18b-56bf-49ae-9d12-01c552c8e8a1
 part-set-gpt-guid /dev/sda 3 25952d6e-7685-4e53-9466-8468635dba64
 
+! log.sh "  ..part-expand-gpt"
+
 part-expand-gpt /dev/sda
+
+! log.sh "Making filesystems"
 
 mkfs vfat /dev/sda1 label:esp
 mkfs ext4 /dev/sda2 label:boot
 mkfs ext4 /dev/sda3 label:root
+
+! log.sh "Mounting filesystems"
 
 mount /dev/sda3 /
 
@@ -32,9 +48,13 @@ mount /dev/sda2 /boot
 mkdir /boot/efi
 mount /dev/sda1 /boot/efi
 
+! log.sh "Loading data.."
+
 tar-in /tmp/pipe /
 
 $ if generate_fstab
+! log.sh "Generate fstab"
+
 write        /etc/fstab ""
 write-append /etc/fstab "LABEL=root /          ext4 defaults 0 1\n"
 write-append /etc/fstab "LABEL=boot /boot      ext4 defaults 0 2\n"
