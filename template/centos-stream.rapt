@@ -1,0 +1,13 @@
+FROM docker://quay.io/centos/centos:stream10
+
+INCLUDE basic-setup nameserver="1.1.1.1" hostname="centos-stream"
+RUN systemd-machine-id-setup
+
+RUN yum install -y grub2-efi-x64 grub2-efi-x64-modules kernel-core dracut
+
+RUN usermod -p "" root
+
+RUN systemctl unmask getty.target dev-hugepages.mount sys-fs-fuse-connections.mount systemd-logind.service systemd-remount-fs.service
+RUN dracut --no-hostonly --regenerate-all --force
+
+RUN ln -s . /boot/boot
