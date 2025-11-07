@@ -1,6 +1,6 @@
 FROM docker://alpine
 
-INCLUDE basic-setup nameserver="1.1.1.1" hostname="alpine" systemd=false
+INCLUDE basic-setup nameserver="1.1.1.1" hostname="alpine"
 
 RUN apk add shadow linux-lts openrc mkinitfs alpine-conf nano e2fsprogs dosfstools
 

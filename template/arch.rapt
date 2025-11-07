@@ -1,6 +1,6 @@
 FROM docker://archlinux
 
-INCLUDE basic-setup nameserver="1.1.1.1" hostname="arch" systemd=false
+INCLUDE basic-setup nameserver="1.1.1.1" hostname="arch"
 
 RUN pacman -Sy --noconfirm systemd systemd-sysvcompat grub linux mkinitcpio
 

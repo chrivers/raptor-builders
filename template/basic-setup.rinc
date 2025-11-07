@@ -1,5 +1,2 @@
 WRITE --chmod 0644 "nameserver {{nameserver}}\n" /etc/resolv.conf
 WRITE --chmod 0644 "{{hostname}}\n" /etc/hostname
-$ if systemd
-RUN systemd-machine-id-setup
-$ endif
