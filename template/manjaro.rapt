@@ -2,7 +2,7 @@ FROM docker://manjarolinux/base
 
 INCLUDE basic-setup nameserver="1.1.1.1" hostname="manjaro"
 
-RUN pacman -Sy --noconfirm systemd systemd-sysvcompat zsh grub linux mkinitcpio efibootmgr
+RUN pacman -Sy --noconfirm systemd systemd-sysvcompat grub linux mkinitcpio efibootmgr
 
 RUN usermod -p "" root
 
