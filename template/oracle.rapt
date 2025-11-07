@@ -1,0 +1,10 @@
+FROM docker://oraclelinux:8
+
+INCLUDE basic-setup nameserver="1.1.1.1" hostname="oracle"
+RUN systemd-machine-id-setup
+
+RUN yum install -y grub2-efi-x64 grub2-efi-x64-modules kernel-core dracut
+
+RUN usermod -p "" root
+
+RUN dracut --no-hostonly --regenerate-all --force
