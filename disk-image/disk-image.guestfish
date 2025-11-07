@@ -62,14 +62,11 @@ write-append /etc/fstab "LABEL=esp  /boot/efi  vfat defaults 0 2\n"
 $ endif
 
 $ if install_grub
-##
-## This workaround help generate an image that works both in qemu and with
-## systemd-nspawn, but it's disabled until a cleaner solution can be found.
-##
-## sh "echo 'GRUB_CMDLINE_LINUX_DEFAULT=\"$GRUB_CMDLINE_LINUX_DEFAULT rw\"' >> /etc/default/grub"
-##
-sh "grub-install --target x86_64-efi --removable"
-sh "[ -x update-grub ] && update-grub || grub-mkconfig -o /boot/grub/grub.cfg"
+! log.sh "Install grub"
+
+copy-in /root/install-grub.sh /tmp/
+sh /tmp/install-grub.sh
+rm /tmp/install-grub.sh
 $ endif
 
 umount /boot/efi
