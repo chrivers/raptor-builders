@@ -1,0 +1,14 @@
+FROM docker://cachyos/cachyos
+
+INCLUDE basic-setup nameserver="1.1.1.1" hostname="cachyos"
+RUN systemd-machine-id-setup
+
+RUN pacman -Sy --noconfirm systemd systemd-sysvcompat grub linux mkinitcpio
+
+RUN usermod -p "" root
+
+RUN systemctl enable getty@tty1.service
+
+MKDIR -p /boot/efi/EFI/BOOT
+MKDIR -p /boot/grub/fonts
+RUN cp /usr/share/grub/unicode.pf2 /boot/grub/fonts/unicode.pf2
