@@ -1,0 +1,20 @@
+FROM docker://almalinux:10
+
+INCLUDE basic-setup nameserver="1.1.1.1" hostname="alma"
+RUN systemd-machine-id-setup
+
+RUN yum install -y grub2-efi-x64 grub2-efi-x64-modules systemd kernel efibootmgr strace kernel-modules-extra iputils nano
+
+RUN usermod -p "" root
+
+RUN dracut --no-hostonly --add-drivers "virtio_blk virtio_net" --regenerate-all --force
+
+RUN rm -f /etc/grub2-efi.cfg
+RUN rm -f /boot/grub2/grubenv
+RUN grub2-editenv /boot/efi/EFI/almalinux/grubenv create
+
+MKDIR -p /boot/efi/EFI/almalinux/fonts/
+RUN cp /usr/share/grub/unicode.pf2 /boot/efi/EFI/almalinux/fonts/unicode.pf2
+RUN ln -s . /boot/boot
+
+RUN systemctl unmask getty.target dev-hugepages.mount sys-fs-fuse-connections.mount systemd-logind.service systemd-remount-fs.service
