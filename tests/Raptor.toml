@@ -42,6 +42,11 @@ cache = "cache2"
 input = ["test"]
 output = "output/part.img"
 
+[run.test-portable-service]
+target = "$rbuild.portable-service"
+input = ["portable-service"]
+output = "output/portable-service-test.raw"
+
 [group.all]
 run = [
     "test-deblive",
@@ -50,4 +55,5 @@ run = [
     "test-live-disk-image",
     "test-live-disk-image-qcow2",
     "test-part-image",
+    "test-portable-service",
 ]
