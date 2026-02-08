@@ -23,9 +23,11 @@ done
 
 if [ -x /usr/sbin/grub2-install ]; then
     line '  ..grub2-mkimage'
+    mkdir -p /boot/efi/EFI/BOOT
     grub2-mkimage --prefix '(hd0,2)/grub2' -O x86_64-efi -o /boot/efi/EFI/BOOT/BOOTX64.EFI ${GRUB_MODULES}
 elif [ -x /usr/sbin/grub-install ]; then
     line '  ..grub-mkimage'
+    mkdir -p /boot/efi/EFI/BOOT /boot/grub
     grub-mkimage --prefix '(hd0,2)/grub' -O x86_64-efi -o /boot/efi/EFI/BOOT/BOOTX64.EFI ${GRUB_MODULES}
 else
     log 'Cannot find grub-install'
