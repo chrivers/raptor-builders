@@ -17,7 +17,6 @@ build-dual-bootable-iso() {
         -r \
         -full-iso9660-filenames \
         -volid ${LABEL} \
-        -joliet -joliet-long \
         --grub2-boot-info \
         --grub2-mbr /usr/lib/grub/i386-pc/boot_hybrid.img \
         --boot-catalog-hide \
