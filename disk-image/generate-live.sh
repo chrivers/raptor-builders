@@ -35,7 +35,7 @@ Info "Building grub image [efi]"
 grub-mkstandalone-efi ${BUILD}/boot/efi/EFI/BOOT/bootx64.efi
 
 compute-disk-space ${BUILD}
-qemu-img create -f ${OUTPUT_FORMAT:-raw} ${OUTPUT} ${DISK_SPACE_SIZE_MB}M
+qemu-img create -q -f ${OUTPUT_FORMAT:-raw} ${OUTPUT} ${DISK_SPACE_SIZE_MB}M
 
 Info "Building disk image"
 maybe-break buildiso
