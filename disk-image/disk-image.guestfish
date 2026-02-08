@@ -62,8 +62,6 @@ write-append /etc/fstab "LABEL=esp  /boot/efi  vfat defaults 0 2\n"
 $ endif
 
 $ if install_grub
-! log.sh "Install grub"
-
 copy-in /root/install-grub.sh /tmp/
 sh /tmp/install-grub.sh
 rm /tmp/install-grub.sh
