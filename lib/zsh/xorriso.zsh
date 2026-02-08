@@ -34,7 +34,7 @@ build-dual-bootable-iso() {
         /=${BUILD} \
         /boot/grub/efi.img=${IMG_EFI} \
         /boot/grub/bios.img=${IMG_BIOS} \
-        --output ${OUTPUT} |& (grep -E '(UPDATE|FAILURE) :' || true)
+        --output ${OUTPUT} |& (grep -E '(UPDATE|FAILURE|WARNING) :' || true)
 
     return ${pipestatus[1]}
 }
