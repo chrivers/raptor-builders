@@ -2,6 +2,7 @@ FROM disk-image.base
 
 INCLUDE lib.zsh
 
+COPY --chmod 0755 disk-image/log.sh /usr/local/bin/log.sh
 COPY disk-image/generate-part.sh /root/generate.sh
 COPY disk-image/part-image.guestfish /root/part-image.guestfish
 
