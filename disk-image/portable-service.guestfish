@@ -1,0 +1,39 @@
+! log.sh "Starting guestfish.."
+
+run
+
+! log.sh "Starting partitioning.."
+
+part-init /dev/sda gpt
+
+<! echo part-add /dev/sda p 2048 -34
+
+! log.sh "  ..part-set-name"
+
+part-set-name /dev/sda 1 root
+
+! log.sh "  ..part-set-gpt-type"
+
+<! echo part-set-gpt-type /dev/sda 1 $(systemd-id128 show -uP root)
+
+! log.sh "  ..part-set-gpt-uuid"
+
+part-set-gpt-guid /dev/sda 1 25952d6e-7685-4e53-9466-8468635dba64
+
+! log.sh "  ..part-expand-gpt"
+
+part-expand-gpt /dev/sda
+
+! log.sh "Making filesystems"
+
+mkfs ext4 /dev/sda1 label:root
+
+! log.sh "Mounting filesystems"
+
+mount /dev/sda1 /
+
+! log.sh "Loading data.."
+
+tar-in /tmp/pipe /
+
+umount /
