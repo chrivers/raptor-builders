@@ -48,7 +48,6 @@ export PART_START_BOOT=$((PART_START_EFI + (DISK_SPACE_EFI_MB * 1024 * 1024) / 5
 export PART_START_ROOT=$((PART_START_BOOT + (DISK_SPACE_BOOT_MB * 1024 * 1024) / 512))
 
 guestfish \
-    -x \
     --no-sync \
     --pipe-error \
     --progress-bars \

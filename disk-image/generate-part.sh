@@ -22,7 +22,6 @@ tar -cf /tmp/pipe -C ${LAYERS} . &
 maybe-break build
 
 guestfish \
-    -x \
     --no-sync \
     --pipe-error \
     --progress-bars \
