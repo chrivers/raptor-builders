@@ -1,8 +1,0 @@
-FROM base
-
-$ set NAME="portable-service-test"
-
-COPY --chmod 0644 test.service /etc/systemd/system/{{NAME}}.service
-RUN systemctl enable {{NAME}}.service
-
-RUN usermod -p "" root

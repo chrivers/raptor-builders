@@ -44,8 +44,15 @@ output = "output/part.img"
 
 [run.test-portable-service]
 target = "$rbuild.portable-service"
-input = ["portable-service"]
-output = "output/portable-service-test.raw"
+input = ["test"]
+output = "output/psvc.raw"
+
+[run.portable-service-runner]
+target = "$rbuild.deblive"
+cache = "cache2"
+input = ["portable-runner"]
+output = "output/portable-service-runner.iso"
+env.GRUB_TIMEOUT = "0"
 
 [group.all]
 run = [
@@ -56,4 +63,5 @@ run = [
     "test-live-disk-image-qcow2",
     "test-part-image",
     "test-portable-service",
+    "portable-service-runner",
 ]

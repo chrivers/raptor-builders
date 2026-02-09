@@ -1,0 +1,5 @@
+FROM base
+
+RUN apt-get -qy install systemd-container
+
+COPY --chmod 0755 attach.sh /etc/rc.local

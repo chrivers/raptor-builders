@@ -28,7 +28,7 @@ function run-test() {
     local NAME=$3
     shift 3
 
-    LOG="Testing ${fg[cyan]}${NAME}${reset_color} [${fg_bold[yellow]}${(r:10:)TEST}${reset_color}: ${fg_bold[white]}${(r:20:)IMAGE}${reset_color}].. "
+    LOG="Testing ${fg[cyan]}${(r:16:)NAME}${reset_color} [${fg_bold[yellow]}${(r:10:)TEST}${reset_color}: ${fg_bold[white]}${(r:20:)IMAGE}${reset_color}].. "
 
     MARKER=${TEST_DIR}/marker.${TEST//[\/ ]/-}.${IMAGE//[\/ ]/-}.${NAME//[\/ ]/-}
     truncate -s0 ${MARKER}
@@ -48,6 +48,20 @@ function test-nspawn() {
     shift 2
 
     sudo systemd-nspawn -q --bind $MARKER:/dev/ttyS0 --console=read-only -i ${IMAGE} init > /dev/null
+}
+
+function test-portsvc() {
+    local IMAGE=$1
+    local NAME=$2
+    local RUNNER=$3
+    shift 3
+
+    local format="raw"
+    if [[ ${RUNNER:e} == "qcow2" ]]; then
+        format=qcow2
+    fi
+
+    test-vm $IMAGE $NAME -drive format=${format},file=${RUNNER},media=cdrom
 }
 
 function test-vm() {
@@ -94,6 +108,8 @@ function test-uefi-vm() {
         -drive if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE_4M.fd \
         -drive if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_VARS_4M.fd
 }
+
+run-test portsvc output/psvc.raw   "Portable service" "output/portable-service-runner.iso" &
 
 run-test nspawn  output/part.img   "Part image" &
 
