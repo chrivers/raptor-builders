@@ -1,0 +1,11 @@
+FROM docker://fedora
+
+INCLUDE basic-setup nameserver="1.1.1.1" hostname="fedora"
+
+RUN yum install -y grub2-efi-x64 grub2-efi-x64-modules kernel-core dracut
+
+RUN systemd-machine-id-setup
+
+RUN usermod -p "" root
+
+RUN ln -s . /boot/boot

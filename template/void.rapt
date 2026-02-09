@@ -1,0 +1,12 @@
+FROM docker://ghcr.io/void-linux/void-musl-full
+
+INCLUDE basic-setup nameserver="1.1.1.1" hostname="void"
+
+RUN xbps-install -S
+RUN xbps-install -y linux grub-x86_64-efi ncurses-base e2fsprogs iproute2
+
+RUN usermod -p "" root
+
+MKDIR -p /boot/efi/EFI/BOOT
+MKDIR -p /boot/grub/fonts
+RUN cp /usr/share/grub/unicode.pf2 /boot/grub/fonts/unicode.pf2

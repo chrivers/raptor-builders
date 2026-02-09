@@ -1,0 +1,10 @@
+FROM docker://rockylinux:9
+
+INCLUDE basic-setup nameserver="1.1.1.1" hostname="rocky"
+
+RUN yum install -y grub2-efi-x64 grub2-efi-x64-modules systemd kernel
+
+RUN usermod -p "" root
+
+RUN ln -s . /boot/boot
+RUN dracut --no-hostonly --regenerate-all --force

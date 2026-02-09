@@ -1,0 +1,14 @@
+FROM docker://opensuse/leap
+
+INCLUDE basic-setup nameserver="1.1.1.1" hostname="opensuse"
+
+RUN zypper --non-interactive install kernel-default grub2-x86_64-efi
+
+# Set root password to "raptor"
+RUN usermod -p "$1$GQf2tS9s$vu72NbrDtUcvvqnyAogrH0" root
+
+RUN /usr/bin/dracut -f --no-hostonly --regenerate-all
+
+MKDIR -p /boot/grub2/fonts
+MKDIR -p /boot/efi/EFI/BOOT/
+RUN cp /usr/share/grub2/unicode.pf2 /boot/grub2/fonts/unicode.pf2

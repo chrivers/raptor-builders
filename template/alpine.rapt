@@ -1,0 +1,32 @@
+FROM docker://alpine
+
+INCLUDE basic-setup nameserver="1.1.1.1" hostname="alpine"
+
+RUN apk add shadow linux-lts openrc mkinitfs alpine-conf nano e2fsprogs dosfstools
+
+RUN usermod -p "" root
+
+WRITE "auto lo\niface lo inet loopback\n" /etc/network/interfaces
+
+RUN apk add --no-scripts efibootmgr grub-efi
+RUN sh -c "echo 'GRUB_CMDLINE_LINUX_DEFAULT=\"rootfstype=ext4 modules=sd-mod,usb-storage,ext4,e1000e\"' >> /etc/default/grub"
+
+RUN sh -c "/usr/sbin/setup-devd mdev || true"
+
+RUN rc-update add bootmisc boot
+RUN rc-update add devfs sysinit
+RUN rc-update add dmesg sysinit
+RUN rc-update add hostname boot
+RUN rc-update add hwclock boot
+RUN rc-update add hwdrivers sysinit
+RUN rc-update add killprocs shutdown
+RUN rc-update add modules boot
+RUN rc-update add mount-ro shutdown
+RUN rc-update add networking boot
+RUN rc-update add savecache shutdown
+RUN rc-update add seedrng boot
+RUN rc-update add swap boot
+
+MKDIR -p /boot/efi/EFI/BOOT
+MKDIR -p /boot/grub/fonts
+RUN cp /usr/share/grub/unicode.pf2 /boot/grub/fonts/unicode.pf2

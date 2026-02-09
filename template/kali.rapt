@@ -1,0 +1,14 @@
+FROM docker://kalilinux/kali-last-release
+
+INCLUDE basic-setup nameserver="1.1.1.1" hostname="kali"
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get -qy update
+RUN apt-get -qy install linux-image-generic systemd-sysv grub-efi
+
+RUN usermod -p "" root
+
+MKDIR -p /boot/efi/EFI/BOOT
+MKDIR -p /boot/grub/fonts
+
+RUN cp /usr/share/grub/unicode.pf2 /boot/grub/fonts/unicode.pf2

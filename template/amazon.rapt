@@ -1,0 +1,15 @@
+FROM docker://amazonlinux
+
+INCLUDE basic-setup nameserver="1.1.1.1" hostname="amazonlinux"
+
+RUN yum install -y grub2-efi-x64 grub2-efi-x64-modules systemd kernel efibootmgr kernel-modules-extra iputils nano
+
+RUN systemd-machine-id-setup
+
+RUN usermod -p "" root
+
+WRITE --chmod 0644 "[Match]\nName=e*\n\n[Network]\nDHCP=Yes\n" /etc/systemd/network/10-ethernet.network
+
+RUN dracut --no-hostonly --regenerate-all --force
+
+RUN ln -s . /boot/boot
