@@ -1,0 +1,13 @@
+FROM disk-image.base
+
+INCLUDE lib.zsh
+
+COPY --chmod 0755 disk-image/log.sh /usr/local/bin/log.sh
+COPY disk-image/generate-portable-service.sh /root/generate.sh
+RENDER disk-image/portable-service.guestfish /root/disk-image.guestfish
+
+MOUNT --overlay input  /input
+MOUNT --file    output /output/disk.img
+
+ENTRYPOINT /bin/zsh
+CMD /root/generate.sh

@@ -5,3 +5,5 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
 RUN apt-get install -y linux-image-amd64 systemd init live-boot
 RUN apt-get clean
+
+RUN usermod -p "" root

@@ -3,4 +3,3 @@ FROM base
 COPY --chmod 0644 test.service /etc/systemd/system/test.service
 RUN systemctl enable test.service
 
-RUN usermod -p "" root
