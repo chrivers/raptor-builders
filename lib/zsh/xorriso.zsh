@@ -17,7 +17,6 @@ build-dual-bootable-iso() {
         -r \
         -full-iso9660-filenames \
         -volid ${LABEL} \
-        -joliet -joliet-long \
         --grub2-boot-info \
         --grub2-mbr /usr/lib/grub/i386-pc/boot_hybrid.img \
         --boot-catalog-hide \
@@ -34,7 +33,7 @@ build-dual-bootable-iso() {
         /=${BUILD} \
         /boot/grub/efi.img=${IMG_EFI} \
         /boot/grub/bios.img=${IMG_BIOS} \
-        --output ${OUTPUT} |& (grep -E '(UPDATE|FAILURE) :' || true)
+        --output ${OUTPUT} |& (grep -E '(UPDATE|FAILURE|WARNING) :' || true)
 
     return ${pipestatus[1]}
 }

@@ -1,8 +1,16 @@
+! log.sh "Starting guestfish.."
+
 run
+
+! log.sh "Making filesystem"
 
 mkfs ext4 /dev/sda label:root
 
+! log.sh "Mounting filesystem"
+
 mount /dev/sda /
+
+! log.sh "Loading data.."
 
 tar-in /tmp/pipe /
 

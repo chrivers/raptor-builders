@@ -12,7 +12,7 @@ OUTPUT=/output/disk.img
 maybe-break top
 
 compute-part-space ${LAYERS}
-qemu-img create -f ${OUTPUT_FORMAT:-raw} ${OUTPUT} ${DISK_SPACE_SIZE_MB}M
+qemu-img create -q -f ${OUTPUT_FORMAT:-raw} ${OUTPUT} ${DISK_SPACE_SIZE_MB}M
 
 Info "Building disk image"
 
@@ -22,7 +22,6 @@ tar -cf /tmp/pipe -C ${LAYERS} . &
 maybe-break build
 
 guestfish \
-    -x \
     --no-sync \
     --pipe-error \
     --progress-bars \

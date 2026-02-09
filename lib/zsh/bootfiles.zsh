@@ -10,7 +10,7 @@ function extract-boot-files() {
         local INITRD=
 
         for layer in $(layerinfo-get-layers-for-target $target); do
-            echo "${layer}.squashfs" >> "${BUILD}/live/${target}.module"
+            echo "${layer##*-}.squashfs" >> "${BUILD}/live/${target}.module"
 
             local INPUT="${LAYERS}/${layer}"
 

@@ -35,7 +35,7 @@ Info "Building grub image [efi]"
 grub-mkstandalone-efi ${BUILD}/boot/efi/EFI/BOOT/bootx64.efi
 
 compute-disk-space ${BUILD}
-qemu-img create -f ${OUTPUT_FORMAT:-raw} ${OUTPUT} ${DISK_SPACE_SIZE_MB}M
+qemu-img create -q -f ${OUTPUT_FORMAT:-raw} ${OUTPUT} ${DISK_SPACE_SIZE_MB}M
 
 Info "Building disk image"
 maybe-break buildiso
@@ -48,7 +48,6 @@ export PART_START_BOOT=$((PART_START_EFI + (DISK_SPACE_EFI_MB * 1024 * 1024) / 5
 export PART_START_ROOT=$((PART_START_BOOT + (DISK_SPACE_BOOT_MB * 1024 * 1024) / 512))
 
 guestfish \
-    -x \
     --no-sync \
     --pipe-error \
     --progress-bars \

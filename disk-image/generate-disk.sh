@@ -12,7 +12,7 @@ OUTPUT=/output/disk.img
 maybe-break top
 
 compute-disk-space ${LAYERS}
-qemu-img create -f ${OUTPUT_FORMAT:-raw} ${OUTPUT} ${DISK_SPACE_SIZE_MB}M
+qemu-img create -q -f ${OUTPUT_FORMAT:-raw} ${OUTPUT} ${DISK_SPACE_SIZE_MB}M
 
 Info "Building disk image"
 
@@ -26,7 +26,6 @@ export PART_START_ROOT=$((PART_START_BOOT + (DISK_SPACE_BOOT_MB * 1024 * 1024) /
 maybe-break build
 
 guestfish \
-    -x \
     --no-sync \
     --pipe-error \
     --progress-bars \
